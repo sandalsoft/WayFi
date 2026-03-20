@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# --- gitleaks secret scanning ---
+if command -v gitleaks &>/dev/null; then
+    gitleaks git --pre-commit --staged --verbose --redact
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "ERROR: gitleaks detected secrets in staged changes."
+        echo "If this is a false positive, add an allowlist entry to .gitleaks.toml"
+        exit 1
+    fi
+else
+    echo "WARNING: gitleaks is not installed. Skipping secret scan."
+    echo "Install: brew install gitleaks"
+fi
+# --- end gitleaks ---

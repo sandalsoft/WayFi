@@ -1,0 +1,7 @@
+name: Secret Scanning
+on:
+  push:
+  pull_request:
+jobs:
+  gitleaks:
+    uses: sandalsoft/.github/workflows/gitleaks.yaml@master

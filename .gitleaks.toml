@@ -1,0 +1,19 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+#
+# Extends the default ruleset (AWS keys, private keys, tokens, etc.)
+# Add project-specific allowlists below as needed.
+
+title = "gitleaks config"
+
+[extend]
+  useDefault = true
+
+[allowlist]
+  # Example: allow a specific test fixture file
+  # paths = ["testdata/fake-creds.json"]
+  #
+  # Example: allow a known false positive
+  # [[allowlist.commits]]
+  # description = "known safe commit"
+  # id = "abc123"
