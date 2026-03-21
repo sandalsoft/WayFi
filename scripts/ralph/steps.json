@@ -220,7 +220,7 @@
       "src/wayfi/webui/routers/patterns.py",
       "src/wayfi/webui/routers/calendar.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 23,
