@@ -1,0 +1,14 @@
+[Unit]
+Description=WayFi SMS Notification Webhook
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m uvicorn wayfi.notify.webhook:app --host 0.0.0.0 --port 8081
+WorkingDirectory=/opt/wayfi
+Restart=on-failure
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

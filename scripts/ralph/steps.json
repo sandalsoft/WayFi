@@ -249,7 +249,7 @@
       "scripts/systemd/wayfi-hostapd.service",
       "scripts/systemd/wayfi-dnsmasq.service"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 25,

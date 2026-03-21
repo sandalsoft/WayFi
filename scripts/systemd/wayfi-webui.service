@@ -1,0 +1,15 @@
+[Unit]
+Description=WayFi Web Dashboard
+After=network.target
+Before=wayfi-orchestrator.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m uvicorn wayfi.webui.app:create_app --host 192.168.8.1 --port 80 --factory
+WorkingDirectory=/opt/wayfi
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

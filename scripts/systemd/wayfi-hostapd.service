@@ -1,0 +1,13 @@
+[Unit]
+Description=WayFi Access Point (hostapd)
+After=network.target
+Before=wayfi-orchestrator.service
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/hostapd /etc/hostapd/hostapd.conf
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

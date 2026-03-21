@@ -1,0 +1,13 @@
+[Unit]
+Description=WayFi DHCP/DNS (dnsmasq)
+After=wayfi-hostapd.service
+Before=wayfi-orchestrator.service
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dnsmasq -k -C /etc/dnsmasq.d/wayfi.conf
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
