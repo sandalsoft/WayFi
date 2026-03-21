@@ -58,7 +58,7 @@
       "src/wayfi/notify/sms.py",
       "src/wayfi/notify/__init__.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 7,
