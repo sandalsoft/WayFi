@@ -209,7 +209,7 @@
       "src/wayfi/webui/routers/status.py",
       "src/wayfi/webui/routers/vault.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 22,
