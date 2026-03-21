@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><title>Hilton WiFi - Welcome</title></head>
+<body>
+<div id="portal-container">
+    <h1>Welcome to Hilton</h1>
+    <p>Hilton Honors members enjoy complimentary WiFi</p>
+    <form action="/portal/hilton/login" method="POST" id="loginForm">
+        <input type="hidden" name="token" value="sess_abc123" />
+        <div>
+            <label for="lastName">Last Name</label>
+            <input type="text" name="lastName" id="lastName" placeholder="Last Name" required />
+        </div>
+        <div>
+            <label for="roomNumber">Room Number</label>
+            <input type="text" name="roomNumber" id="roomNumber" placeholder="Room Number" required />
+        </div>
+        <div>
+            <label for="loyaltyNumber">Hilton Honors Number (optional)</label>
+            <input type="text" name="loyaltyNumber" id="loyaltyNumber" placeholder="Honors Number" />
+        </div>
+        <div>
+            <input type="checkbox" name="acceptTerms" id="acceptTerms" />
+            <label for="acceptTerms">I accept the Terms of Service</label>
+        </div>
+        <button type="submit">Connect</button>
+    </form>
+</div>
+</body>
+</html>

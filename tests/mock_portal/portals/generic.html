@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>WiFi Login</title></head>
+<body>
+<div class="portal">
+    <h1>Welcome</h1>
+    <p>Please accept the terms to connect.</p>
+    <form action="/portal/generic/login" method="POST">
+        <input type="hidden" name="dst" value="http://www.google.com" />
+        <input type="hidden" name="popup" value="false" />
+        <button type="submit">Accept & Connect</button>
+    </form>
+</div>
+</body>
+</html>

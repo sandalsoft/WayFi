@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head><title>Guest Registration - Aruba ClearPass</title></head>
+<body>
+<div class="aruba-guest">
+    <h1>Guest Registration</h1>
+    <p>Please register to access the network.</p>
+    <form action="/guest/auth" method="POST">
+        <div>
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="your@email.com" required />
+        </div>
+        <div>
+            <label>Full Name</label>
+            <input type="text" name="name" placeholder="Full Name" required />
+        </div>
+        <div>
+            <input type="checkbox" name="terms_accepted" />
+            <label>I agree to the acceptable use policy</label>
+        </div>
+        <button type="submit">Register & Connect</button>
+    </form>
+</div>
+</body>
+</html>

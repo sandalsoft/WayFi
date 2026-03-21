@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>Marriott Bonvoy WiFi</title></head>
+<body>
+<div class="marriott-portal">
+    <h1>Welcome to Marriott</h1>
+    <p>Marriott Bonvoy members enjoy complimentary WiFi.</p>
+    <form action="/portal/marriott/login" method="POST">
+        <input type="hidden" name="session" value="m_sess_xyz" />
+        <div>
+            <label>Room Number</label>
+            <input type="text" name="room" placeholder="Room Number" required />
+        </div>
+        <div>
+            <label>Last Name</label>
+            <input type="text" name="lastName" placeholder="Last Name" required />
+        </div>
+        <div>
+            <input type="checkbox" name="acceptTerms" />
+            <label>I accept the Terms and Conditions</label>
+        </div>
+        <button type="submit">Connect</button>
+    </form>
+</div>
+</body>
+</html>
