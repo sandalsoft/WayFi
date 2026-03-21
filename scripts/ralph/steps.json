@@ -258,7 +258,7 @@
     "files": [
       "scripts/provision.sh"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 26,
