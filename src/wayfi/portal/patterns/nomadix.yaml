@@ -1,0 +1,20 @@
+name: nomadix
+vendor: Nomadix
+detection_signals:
+  url_patterns:
+    - "nomadix"
+    - "gateway\\.hotel"
+    - "/cgi-bin/login"
+  html_signals:
+    - "nomadix"
+    - 'name=["\']room'
+    - 'name=["\']last_name'
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/cgi-bin/login"
+  method: POST
+  fields:
+    room: "{vault.room_number}"
+    last_name: "{vault.last_name}"
+  checkboxes:
+    - accept_terms

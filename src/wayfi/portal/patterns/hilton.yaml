@@ -1,0 +1,23 @@
+name: hilton
+vendor: Hilton
+detection_signals:
+  url_patterns:
+    - "hilton"
+    - "hhonors"
+    - "hiltonguestinternet"
+  html_signals:
+    - "hilton"
+    - "Hilton Honors"
+    - 'name=["\']loyalty'
+    - 'name=["\']lastName'
+    - "Welcome to Hilton"
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/login"
+  method: POST
+  fields:
+    lastName: "{vault.last_name}"
+    roomNumber: "{vault.room_number}"
+    loyaltyNumber: "{vault.loyalty_hilton}"
+  checkboxes:
+    - acceptTerms

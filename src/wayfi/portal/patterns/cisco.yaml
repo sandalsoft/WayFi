@@ -1,0 +1,21 @@
+name: cisco
+vendor: Cisco
+detection_signals:
+  url_patterns:
+    - "/portal/"
+    - "cisco"
+    - "webauth"
+    - "1\\.1\\.1\\.1/login"
+  html_signals:
+    - "cisco"
+    - "Web Authentication"
+    - 'name=["\']username'
+    - 'name=["\']password'
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/login.html"
+  method: POST
+  fields:
+    username: "{vault.email}"
+    password: ""
+  checkboxes: []

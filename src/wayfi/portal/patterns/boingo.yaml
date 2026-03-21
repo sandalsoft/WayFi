@@ -1,0 +1,20 @@
+name: boingo
+vendor: Boingo
+detection_signals:
+  url_patterns:
+    - "boingo"
+    - "boingohotspot"
+  html_signals:
+    - "boingo"
+    - "Boingo Wireless"
+    - 'name=["\']email'
+    - "Free Wi-Fi"
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/login"
+  method: POST
+  fields:
+    email: "{vault.email_throwaway}"
+  checkboxes:
+    - terms_of_service
+    - accept_ads
