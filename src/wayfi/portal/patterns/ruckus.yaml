@@ -8,7 +8,7 @@ detection_signals:
   html_signals:
     - "ruckus"
     - "cloudpath"
-    - 'name=["\']email'
+    - "name=.email"
   min_signals: 2
 solve_strategy:
   action_url_pattern: "/enroll"

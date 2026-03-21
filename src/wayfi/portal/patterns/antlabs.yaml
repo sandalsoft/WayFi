@@ -7,8 +7,8 @@ detection_signals:
     - "ig/hotspot"
   html_signals:
     - "antlabs"
-    - 'name=["\']room_num'
-    - 'name=["\']guest_name'
+    - "name=.room_num"
+    - "name=.guest_name"
   min_signals: 2
 solve_strategy:
   action_url_pattern: "/hsp/login"

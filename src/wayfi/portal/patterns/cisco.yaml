@@ -9,8 +9,8 @@ detection_signals:
   html_signals:
     - "cisco"
     - "Web Authentication"
-    - 'name=["\']username'
-    - 'name=["\']password'
+    - "name=.username"
+    - "name=.password"
   min_signals: 2
 solve_strategy:
   action_url_pattern: "/login.html"

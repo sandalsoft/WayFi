@@ -7,8 +7,8 @@ detection_signals:
     - "/cgi-bin/login"
   html_signals:
     - "nomadix"
-    - 'name=["\']room'
-    - 'name=["\']last_name'
+    - "name=.room"
+    - "name=.last_name"
   min_signals: 2
 solve_strategy:
   action_url_pattern: "/cgi-bin/login"

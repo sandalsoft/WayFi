@@ -7,7 +7,7 @@ detection_signals:
   html_signals:
     - "boingo"
     - "Boingo Wireless"
-    - 'name=["\']email'
+    - "name=.email"
     - "Free Wi-Fi"
   min_signals: 2
 solve_strategy:

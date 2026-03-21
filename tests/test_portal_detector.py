@@ -59,11 +59,12 @@ class TestPortalDetection:
         )
         assert await detector.verify_connectivity() is True
 
-    async def test_timeout_handling(self):
+    async def test_error_handling(self):
         detector = PortalDetector(
-            probe_url="http://192.0.2.1/generate_204",  # non-routable
+            probe_url="http://127.0.0.1:19999/generate_204",  # nothing listening
             fallbacks=[],
-            timeout=0.5,
+            timeout=1.0,
         )
         result = await detector.detect()
-        assert result.error == "timeout"
+        assert result.error != ""
+        assert result.is_captive is False

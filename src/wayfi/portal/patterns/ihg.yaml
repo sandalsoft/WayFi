@@ -9,8 +9,8 @@ detection_signals:
     - "IHG"
     - "InterContinental"
     - "Holiday Inn"
-    - 'name=["\']room'
-    - 'name=["\']lastName'
+    - "name=.room"
+    - "name=.lastName"
   min_signals: 2
 solve_strategy:
   action_url_pattern: "/login"

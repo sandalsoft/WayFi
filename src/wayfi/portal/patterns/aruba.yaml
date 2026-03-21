@@ -8,7 +8,7 @@ detection_signals:
   html_signals:
     - "aruba"
     - "clearpass"
-    - 'name=["\']email'
+    - "name=.email"
     - "Guest Registration"
   min_signals: 2
 solve_strategy:
