@@ -1,13 +1,19 @@
-"""Network quality scoring with configurable weights."""
+"""Network quality scoring with configurable weights and calendar intelligence."""
 
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+from wayfi.network.scanner import ScanResult, SecurityType
 from wayfi.network.speedtest import SpeedResult
 
 logger = logging.getLogger(__name__)
+
+# Scoring bonuses for network selection
+CALENDAR_MATCH_BONUS = 50
+KNOWN_NETWORK_BONUS = 30
+SIGNAL_WEIGHT = 1.0
 
 
 @dataclass
@@ -93,3 +99,75 @@ class NetworkScorer:
         )
         logger.info("Network score: %.1f/10 (%s)", qs.overall, qs.grade)
         return qs
+
+
+@dataclass
+class NetworkCandidate:
+    scan_result: ScanResult
+    selection_score: float = 0.0
+    calendar_match: bool = False
+    known_network: bool = False
+
+
+class NetworkSelector:
+    """Select the best network from scan results using signal strength,
+    calendar intelligence, and known network bonuses."""
+
+    def __init__(
+        self,
+        known_ssids: set[str] | None = None,
+        calendar_ssid_hints: list[str] | None = None,
+    ) -> None:
+        self.known_ssids = known_ssids or set()
+        self.calendar_hints = [h.lower() for h in (calendar_ssid_hints or [])]
+
+    def rank(self, scan_results: list[ScanResult]) -> list[NetworkCandidate]:
+        """Rank scan results by composite score. Higher = better."""
+        candidates = []
+        for result in scan_results:
+            if not result.ssid:
+                continue  # Skip hidden networks
+
+            candidate = NetworkCandidate(scan_result=result)
+            score = 0.0
+
+            # Signal strength (0-100 mapped to 0-100 points)
+            score += result.signal_quality * SIGNAL_WEIGHT
+
+            # Calendar location match
+            ssid_lower = result.ssid.lower()
+            if any(hint in ssid_lower for hint in self.calendar_hints):
+                score += CALENDAR_MATCH_BONUS
+                candidate.calendar_match = True
+
+            # Known network bonus
+            if result.ssid in self.known_ssids:
+                score += KNOWN_NETWORK_BONUS
+                candidate.known_network = True
+
+            # Prefer open networks (easier portal solve) over encrypted ones
+            # for travel router use case
+            if result.security == SecurityType.OPEN:
+                score += 10
+
+            # Prefer 5GHz for speed
+            if result.is_5ghz:
+                score += 5
+
+            candidate.selection_score = score
+            candidates.append(candidate)
+
+        candidates.sort(key=lambda c: c.selection_score, reverse=True)
+
+        if candidates:
+            best = candidates[0]
+            logger.info(
+                "Best network: %s (score=%.0f, signal=%d%%, calendar=%s, known=%s)",
+                best.scan_result.ssid,
+                best.selection_score,
+                best.scan_result.signal_quality,
+                best.calendar_match,
+                best.known_network,
+            )
+
+        return candidates
