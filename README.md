@@ -1,100 +1,133 @@
-# Claude Code Template
+# WayFi
 
-A template repository for bootstrapping projects using Claude's code execution environment on claude.ai.
+AI-powered travel router that handles captive portal logins so you don't have to.
 
-## How to Use
+## What This Does
 
-### 1. Create a new repo from this template
-- Click **"Use this template"** on GitHub
-- Name your new repo
-- Clone it or leave it on GitHub
+WayFi is a portable Raspberry Pi 5 device that automatically connects to public WiFi, solves captive portal login pages (hotels, airports, coffee shops), and rebroadcasts the authenticated connection as a private, VPN-protected network for all your devices. It uses a 3-tier solving engine: pattern matching for known portals, a local LLM for unknown ones, and a cloud API fallback when the local model can't figure it out.
 
-### 2. Start a new conversation on claude.ai
+It also syncs with your calendar to anticipate which networks you'll need and pre-loads credentials before you arrive.
 
-Tell Claude:
-
-> Clone https://github.com/YOUR_USERNAME/YOUR_NEW_REPO and build me a [your idea]
-
-Or if you just want to use the template without a GitHub repo:
-
-> Read the CLAUDE.md and flow commands from my template, then interview me about building [your idea]
-
-### 3. The Flow
-
-1. **Interview** — Claude asks you questions about the project
-2. **Plan** — Claude generates a detailed implementation plan
-3. **Execute** — Ralph (the autonomous executor) builds it step by step
-
-## Structure
+## How It Works
 
 ```
-├── CLAUDE.md                          # Project instructions for Claude
-├── .claude/
-│   ├── commands/                      # Slash commands (flow + skills)
-│   │   ├── flow-next-interview.md     # Discovery interview
-│   │   ├── flow-next-plan.md          # Plan generation
-│   │   ├── flow-next-init-ralph.md    # Autonomous execution
-│   │   └── *.md                       # 12 installed skill commands
-│   └── skills/                        # Supporting files for skills
-│       ├── session-handoff/           # Scripts & templates
-│       ├── qa-test-planner/           # Test case generators & references
-│       ├── c4-architecture/           # C4 syntax & pattern references
-│       ├── database-schema-designer/  # Schema checklists & templates
-│       ├── dependency-updater/        # Update scripts
-│       └── clean-web-design/          # Design tokens & component patterns
-├── scripts/ralph/
-│   ├── mark_done.py                   # Step tracking utility
-│   ├── steps.json                     # Machine-readable plan (generated)
-│   ├── logs/                          # Execution logs
-│   └── state/                         # State tracking
-├── docs/
-│   ├── interview-answers.md           # Interview output (generated)
-│   └── plugins.md                     # Plugin documentation
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐
+│  Public WiFi │───▶│   WayFi Pi   │───▶│ Your Devices │
+│  (upstream)  │    │  NAT + VPN   │    │ (private AP) │
+└─────────────┘    └──────────────┘    └──────────────┘
+```
+
+Two WiFi adapters: one connects upstream to the public network, the other broadcasts your private SSID. All traffic routes through WireGuard or OpenVPN.
+
+**Portal solving chain:**
+
+1. **Heuristic patterns** (~50ms) — YAML pattern files for known vendors (Hilton, Marriott, Boingo, Starbucks, etc.)
+2. **Local LLM** (8-15s) — Llama 3.1 8B running on the Pi via llama.cpp, parses unknown portal HTML and generates form submissions
+3. **Cloud API** (fallback) — Claude or OpenAI API via phone hotspot when the local model fails
+
+**Calendar integration** pulls upcoming hotel stays from iCloud, Google, or Outlook and pre-caches credentials + network profiles.
+
+## Hardware
+
+| Component | Spec |
+|-----------|------|
+| Board | Raspberry Pi 5 (16GB RAM) |
+| Storage | 128GB microSD |
+| Upstream WiFi | MT7921 USB adapter |
+| AP WiFi | RTL8812BU USB adapter |
+| Power | USB-C PD |
+| Case | Argon ONE V3 |
+
+**Alternative:** GL-MT3000 Beryl AX travel router running OpenWrt (no local LLM, cloud API only).
+
+## Tech Stack
+
+- **Language:** Python 3.11 (asyncio throughout)
+- **Portal solving:** requests + BeautifulSoup4, Playwright for JS-heavy portals
+- **LLM:** llama.cpp with GBNF grammar-constrained JSON output
+- **Web dashboard:** FastAPI + Jinja2 on `192.168.8.1`
+- **Credentials:** AES-256-GCM + Argon2id key derivation in SQLite
+- **Notifications:** Twilio bidirectional SMS (connection alerts + room number prompts)
+- **VPN:** WireGuard / OpenVPN with per-network policies
+- **WiFi:** hostapd + dnsmasq (AP), wpa_supplicant + iw (client)
+- **Process management:** systemd
+- **Testing:** pytest + pytest-asyncio + mock portal HTTP server
+
+## Project Structure
+
+```
+wayfi/
+├── config/                     YAML defaults, network profiles
+├── src/wayfi/
+│   ├── orchestrator.py         Main state machine (9 states)
+│   ├── portal/                 Detection, heuristics, LLM solver, cloud fallback
+│   │   └── patterns/           Per-vendor YAML patterns (11 vendors)
+│   ├── calendar/               iCloud, Google, Outlook sync + location matching
+│   ├── vault/                  Encrypted credential store
+│   ├── network/                WiFi scan, connect, speed test, AP management
+│   ├── notify/                 Twilio SMS service
+│   ├── vpn/                    WireGuard/OpenVPN policy engine
+│   └── webui/                  FastAPI dashboard
 ├── scripts/
-│   ├── setup-plugins.sh               # Plugin installation script
-│   └── ralph/
-│       └── ...
-└── plan.md                            # Implementation plan (generated)
+│   ├── provision.sh            One-command RPi setup
+│   └── systemd/                Service unit files
+├── tests/
+│   ├── mock_portal/            Mock captive portal server + HTML fixtures
+│   └── test_*.py               Unit + integration tests
+└── models/                     GGUF model files (gitignored)
 ```
 
-## Flow Commands
+## Getting Started
 
-| Command | What it does |
-|---------|-------------|
-| `/flow-next-interview <idea>` | Structured discovery interview |
-| `/flow-next-plan` | Generate implementation plan |
-| `/flow-next-init-ralph` | Begin autonomous execution |
+### Prerequisites
 
-## Plugins
+- Raspberry Pi 5 with Raspberry Pi OS Lite (Bookworm 64-bit)
+- Two USB WiFi adapters (MT7921 + RTL8812BU or equivalent)
+- Python 3.11+
 
-Optional plugins for safety and continuity:
+### Install
 
-| Plugin | Purpose | Install |
-|--------|---------|---------|
-| [Destructive Command Guard](https://github.com/Dicklesworthstone/destructive_command_guard) | Blocks dangerous commands before execution | `bash scripts/setup-plugins.sh` |
-| [Claude-Mem](https://github.com/thedotmack/claude-mem) | Persistent memory across sessions | `/plugin install claude-mem` |
+```bash
+git clone https://github.com/your-username/WayFi.git
+cd WayFi
+bash scripts/provision.sh
+```
 
-Run `bash scripts/setup-plugins.sh` to install both, or see `docs/plugins.md` for details.
+The provisioning script handles system dependencies, Python packages, hostapd/dnsmasq config, systemd services, and llama.cpp compilation.
 
-## Installed Skills
+### Configuration
 
-This template comes with 12 pre-installed Claude Code skills:
+Edit `config/wayfi.yaml` for WiFi SSID/password, VPN settings, Twilio credentials, and calendar provider setup. Credential management happens through the web dashboard at `192.168.8.1` or via the encrypted vault CLI.
 
-| Command | Purpose |
-|---------|---------|
-| `/crafting-effective-readmes` | Write or improve README files matched to project type |
-| `/commit-work` | Review, stage, and create well-structured git commits |
-| `/game-changing-features` | Find 10x product opportunities and high-leverage improvements |
-| `/mermaid-diagrams` | Create software diagrams (class, sequence, flowchart, ERD, C4) |
-| `/napkin` | Per-repo learning file — tracks mistakes and patterns |
-| `/tailwind-v4-shadcn` | Set up Tailwind v4 + shadcn/ui with correct architecture |
-| `/session-handoff` | Create handoff documents for seamless session transfers |
-| `/qa-test-planner` | Generate test plans, test cases, regression suites, bug reports |
-| `/c4-architecture` | Generate C4 model architecture diagrams in Mermaid |
-| `/database-schema-designer` | Design SQL/NoSQL schemas with migrations and indexing |
-| `/dependency-updater` | Smart dependency management for any language |
-| `/clean-web-design` | Professional design system with HSL tokens and components |
+## Performance Targets
 
-## Customization
+| Metric | Target |
+|--------|--------|
+| Boot to connected (known network) | < 45s |
+| Boot to connected (LLM solve) | < 75s |
+| Heuristic portal solve | < 50ms |
+| LLM portal solve | 8-15s |
+| Auto-solve success rate | 80%+ heuristic, 95%+ with LLM |
 
-Edit `CLAUDE.md` to add your own coding standards, preferred tech stack, or project-specific instructions. Add custom flow commands in `.claude/commands/`.
+## Development
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Run tests with mock portal server
+pytest tests/ -v
+
+# Type check
+mypy src/wayfi/
+
+# Start the orchestrator locally (without WiFi hardware)
+python -m wayfi.orchestrator --dry-run
+```
+
+## Status
+
+Work in progress. Phase 1 (project scaffolding) is complete. See `plan.md` for the full implementation roadmap.
