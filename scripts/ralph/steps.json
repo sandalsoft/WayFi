@@ -27,7 +27,7 @@
       "src/wayfi/vault/vault.py",
       "src/wayfi/vault/__init__.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 4,
