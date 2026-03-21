@@ -1,0 +1,97 @@
+# WayFi Configuration
+# Override these values for your setup. Credentials go in the vault, not here.
+
+network:
+  scan_interval: 15          # seconds between WiFi scans in MONITOR state
+  scan_interval_battery: 60  # seconds between scans in battery-saver mode
+  dhcp_timeout: 5            # seconds to wait for DHCP lease
+  reconnect_delay: 3         # seconds before reconnect attempt after drop
+  max_retries: 3             # max connection retries per network before moving on
+
+portal:
+  probe_url: "http://connectivitycheck.gstatic.com/generate_204"
+  probe_fallbacks:
+    - "http://captive.apple.com"
+    - "http://detectportal.firefox.com"
+  probe_timeout: 2           # seconds
+  solve_timeout: 30          # seconds — max time for any single solve attempt
+  cache_strategy: true       # cache successful solve strategies by portal fingerprint
+
+ap:
+  ssid: "WayFi-Travel"
+  password: "changeme"       # WPA2-PSK passphrase — change this
+  channel: 6
+  interface: "wlan1"
+  subnet: "192.168.8.0/24"
+  gateway: "192.168.8.1"
+  dhcp_start: "192.168.8.10"
+  dhcp_end: "192.168.8.250"
+  dns_forwarding: true
+  hw_mode: "a"               # 802.11ac
+  country_code: "US"
+
+upstream:
+  interface: "wlan0"
+
+llm:
+  endpoint: "http://localhost:8080"
+  model: "llama-3.1-8b"
+  timeout: 30                # seconds
+  context_window: 2048
+  temperature: 0.1
+  grammar_constrained: true  # use GBNF grammar for JSON output
+
+cloud:
+  provider: "claude"         # claude or openai
+  claude_model: "claude-sonnet-4-20250514"
+  openai_model: "gpt-4o-mini"
+  timeout: 15
+  # API keys stored in vault, not here
+
+twilio:
+  # SID and auth token stored in vault
+  from_number: ""            # your Twilio number (e.g. +15551234567)
+  to_number: ""              # your phone number for notifications
+  webhook_path: "/webhook/sms"
+
+vpn:
+  default_policy: "always"   # always, never, or ask
+  wireguard:
+    config_dir: "/etc/wireguard"
+  openvpn:
+    config_dir: "/etc/openvpn/client"
+
+calendar:
+  sync_interval: 1800        # seconds (30 minutes)
+  lookahead_days: 7
+  providers: []              # list of {type: icloud|google|outlook, name: "..."}
+
+speedtest:
+  download_url: "https://speed.cloudflare.com/__down?bytes=10000000"
+  upload_url: "https://speed.cloudflare.com/__up"
+  ping_targets:
+    - "1.1.1.1"
+    - "8.8.8.8"
+  ping_samples: 10
+  dns_domains:
+    - "google.com"
+    - "cloudflare.com"
+    - "amazon.com"
+    - "github.com"
+    - "apple.com"
+  weights:
+    download: 0.4
+    upload: 0.2
+    latency: 0.2
+    jitter: 0.1
+    dns: 0.1
+
+webui:
+  host: "192.168.8.1"
+  port: 80
+
+logging:
+  level: "INFO"
+  file: "/var/log/wayfi/wayfi.log"
+  max_bytes: 10485760        # 10MB
+  backup_count: 5
