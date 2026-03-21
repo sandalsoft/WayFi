@@ -1,0 +1,21 @@
+name: aruba
+vendor: Aruba Networks
+detection_signals:
+  url_patterns:
+    - "/guest/"
+    - "aruba"
+    - "clearpass"
+  html_signals:
+    - "aruba"
+    - "clearpass"
+    - 'name=["\']email'
+    - "Guest Registration"
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/guest/auth"
+  method: POST
+  fields:
+    email: "{vault.email}"
+    name: "{vault.first_name} {vault.last_name}"
+  checkboxes:
+    - terms_accepted

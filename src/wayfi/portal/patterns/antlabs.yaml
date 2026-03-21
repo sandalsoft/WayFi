@@ -1,0 +1,20 @@
+name: antlabs
+vendor: ANTlabs
+detection_signals:
+  url_patterns:
+    - "/hsp/"
+    - "antlabs"
+    - "ig/hotspot"
+  html_signals:
+    - "antlabs"
+    - 'name=["\']room_num'
+    - 'name=["\']guest_name'
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/hsp/login"
+  method: POST
+  fields:
+    room_num: "{vault.room_number}"
+    guest_name: "{vault.last_name}"
+  checkboxes:
+    - accept_tos

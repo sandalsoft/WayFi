@@ -1,0 +1,13 @@
+name: generic
+vendor: Generic
+detection_signals:
+  url_patterns: []
+  html_signals:
+    - "<form"
+    - 'type=["\']submit'
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: ""
+  method: POST
+  fields: {}
+  checkboxes: []

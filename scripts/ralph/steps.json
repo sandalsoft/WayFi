@@ -105,7 +105,7 @@
       "src/wayfi/portal/patterns/starbucks.yaml",
       "src/wayfi/portal/patterns/generic.yaml"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 11,

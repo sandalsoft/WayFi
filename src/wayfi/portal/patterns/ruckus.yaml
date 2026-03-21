@@ -1,0 +1,19 @@
+name: ruckus
+vendor: Ruckus
+detection_signals:
+  url_patterns:
+    - "cloudpath"
+    - "ruckus"
+    - "ruckuswireless"
+  html_signals:
+    - "ruckus"
+    - "cloudpath"
+    - 'name=["\']email'
+  min_signals: 2
+solve_strategy:
+  action_url_pattern: "/enroll"
+  method: POST
+  fields:
+    email: "{vault.email}"
+  checkboxes:
+    - terms
