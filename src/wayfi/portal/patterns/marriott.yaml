@@ -8,8 +8,8 @@ detection_signals:
   html_signals:
     - "marriott"
     - "Bonvoy"
-    - 'name=["\']room'
-    - 'name=["\']lastName'
+    - "name=.room"
+    - "name=.lastName"
     - "Welcome to Marriott"
   min_signals: 2
 solve_strategy:
