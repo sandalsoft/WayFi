@@ -1,0 +1,14 @@
+[Unit]
+Description=WayFi Calendar Sync
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -c "import asyncio; from wayfi.calendar.sync import CalendarSync; s = CalendarSync(); asyncio.run(s.start())"
+WorkingDirectory=/opt/wayfi
+Restart=on-failure
+RestartSec=30
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

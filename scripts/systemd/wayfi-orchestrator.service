@@ -1,0 +1,16 @@
+[Unit]
+Description=WayFi Orchestrator
+After=wayfi-llm.service wayfi-hostapd.service wayfi-dnsmasq.service wayfi-webui.service
+Requires=wayfi-hostapd.service wayfi-dnsmasq.service
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/python3 -m wayfi.orchestrator
+WorkingDirectory=/opt/wayfi
+Restart=always
+RestartSec=5
+WatchdogSec=60
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
