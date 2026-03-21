@@ -286,7 +286,7 @@
       "tests/test_sms.py",
       "tests/test_calendar.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 28,
