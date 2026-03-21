@@ -68,7 +68,7 @@
       "src/wayfi/network/speedtest.py",
       "src/wayfi/network/scorer.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 8,
