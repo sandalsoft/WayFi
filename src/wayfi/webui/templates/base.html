@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WayFi — {% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="nav-brand">WayFi</a>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/vault">Vault</a>
+            <a href="/networks">Networks</a>
+            <a href="/patterns">Patterns</a>
+            <a href="/calendar">Calendar</a>
+            <a href="/settings">Settings</a>
+            <a href="/logs">Logs</a>
+        </div>
+    </nav>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    <script src="/static/main.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>WayFi Status</h1>
+<div class="status-grid" id="status">
+    <div class="card">
+        <h3>State</h3>
+        <p id="state" class="value">loading...</p>
+    </div>
+    <div class="card">
+        <h3>Network</h3>
+        <p id="ssid" class="value">--</p>
+        <p id="ip" class="detail">--</p>
+    </div>
+    <div class="card">
+        <h3>Quality</h3>
+        <p id="quality" class="value">--</p>
+    </div>
+    <div class="card">
+        <h3>VPN</h3>
+        <p id="vpn" class="value">--</p>
+    </div>
+    <div class="card">
+        <h3>Portal</h3>
+        <p id="portal" class="value">--</p>
+    </div>
+    <div class="card">
+        <h3>Uptime</h3>
+        <p id="uptime" class="value">--</p>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function refreshStatus() {
+    try {
+        const resp = await fetch('/api/status');
+        const data = await resp.json();
+        document.getElementById('state').textContent = data.state;
+        document.getElementById('ssid').textContent = data.ssid || 'Not connected';
+        document.getElementById('ip').textContent = data.ip_address || '';
+        document.getElementById('quality').textContent = data.quality_score ? data.quality_score + '/10' : '--';
+        document.getElementById('vpn').textContent = data.vpn_active ? 'Active' : 'Inactive';
+        document.getElementById('portal').textContent = data.portal_solved ? 'Solved' : 'Pending';
+        const mins = Math.floor(data.uptime_seconds / 60);
+        document.getElementById('uptime').textContent = mins + 'm';
+    } catch (e) {
+        document.getElementById('state').textContent = 'error';
+    }
+}
+refreshStatus();
+setInterval(refreshStatus, 5000);
+</script>
+{% endblock %}

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from wayfi.webui.routers import calendar, networks, patterns, status, vault
+from wayfi.webui.routers import calendar, logs, networks, patterns, settings, status, vault
 
 STATIC_DIR = Path(__file__).parent / "static"
 TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -48,5 +48,15 @@ def create_app(
     app.include_router(networks.router, prefix="/api")
     app.include_router(patterns.router, prefix="/api")
     app.include_router(calendar.router, prefix="/api")
+    app.include_router(settings.router, prefix="/api")
+    app.include_router(logs.router, prefix="/api")
+
+    # Set up log buffer for streaming
+    logs.setup_log_buffer()
+
+    # HTML page routes
+    @app.get("/")
+    async def dashboard(request: Request):
+        return templates.TemplateResponse("dashboard.html", {"request": request})
 
     return app
