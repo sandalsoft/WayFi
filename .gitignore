@@ -24,3 +24,19 @@ scripts/ralph/logs/*.log
 # Environment
 .env
 .env.local
+
+# ── GSD baseline (auto-generated) ──
+.gsd
+*.swp
+*.swo
+*~
+*.code-workspace
+.env.*
+!.env.example
+.next/
+target/
+vendor/
+*.log
+coverage/
+.cache/
+tmp/
