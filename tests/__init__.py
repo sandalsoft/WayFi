@@ -1,0 +1,1 @@
+"""WayFi test suite."""
