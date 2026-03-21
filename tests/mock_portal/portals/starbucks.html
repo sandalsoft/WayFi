@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Starbucks WiFi</title></head>
+<body>
+<div class="starbucks-portal">
+    <h1>Starbucks Free WiFi</h1>
+    <p>Accept the terms to connect.</p>
+    <form action="/portal/starbucks/login" method="POST">
+        <input type="hidden" name="redirect" value="http://www.starbucks.com" />
+        <div>
+            <input type="checkbox" name="tos" id="tos" />
+            <label for="tos">I accept the Terms of Service</label>
+        </div>
+        <button type="submit">Accept & Connect</button>
+    </form>
+</div>
+</body>
+</html>

@@ -270,7 +270,7 @@
       "tests/mock_portal/portals/hilton.html",
       "tests/mock_portal/portals/generic.html"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 27,

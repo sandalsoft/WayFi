@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>Hotel Guest Internet Access</title></head>
+<body>
+<div class="nomadix-portal">
+    <h1>Guest Internet Access</h1>
+    <p>Please enter your room number and last name to connect.</p>
+    <form action="/cgi-bin/login" method="POST">
+        <input type="hidden" name="ga_srvr" value="nomadix-gw01" />
+        <div>
+            <label>Room Number</label>
+            <input type="text" name="room" placeholder="Room" required />
+        </div>
+        <div>
+            <label>Last Name</label>
+            <input type="text" name="last_name" placeholder="Last Name" required />
+        </div>
+        <div>
+            <input type="checkbox" name="accept_terms" />
+            <label>I accept the terms and conditions</label>
+        </div>
+        <input type="submit" value="Connect" />
+    </form>
+</div>
+</body>
+</html>
