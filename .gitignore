@@ -21,6 +21,10 @@ Thumbs.db
 # Ralph logs (keep structure, not content)
 scripts/ralph/logs/*.log
 
+# Models (GGUF files)
+models/
+*.gguf
+
 # Environment
 .env
 .env.local

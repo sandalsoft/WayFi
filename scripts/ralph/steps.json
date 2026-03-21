@@ -3,203 +3,308 @@
     "id": 1,
     "phase": "setup",
     "task": "Initialize Python project with pyproject.toml (Python 3.11, dependencies: fastapi, uvicorn, pycryptodome, argon2-cffi, twilio, aiohttp, beautifulsoup4, caldav, google-api-python-client, msal, pyyaml, jinja2, speedtest-cli, playwright), create full directory structure (src/wayfi/{orchestrator,portal/patterns,calendar,vault,network,notify,vpn,webui/{routers,static,templates}}), create all __init__.py files, update .gitignore to exclude models/ and *.gguf",
-    "files": ["pyproject.toml", "src/wayfi/__init__.py", ".gitignore"],
-    "done": false
+    "files": [
+      "pyproject.toml",
+      "src/wayfi/__init__.py",
+      ".gitignore"
+    ],
+    "done": true
   },
   {
     "id": 2,
     "phase": "setup",
     "task": "Create config/wayfi.yaml with all default configuration: network settings (scan_interval: 15s, dhcp_timeout: 5s, portal_probe_url, portal_probe_timeout: 2s), AP settings (ssid: WayFi-Travel, channel: 6, interface: wlan1, subnet: 192.168.8.0/24), LLM settings (endpoint: localhost:8080, model: llama-3.1-8b, timeout: 30s, context_window: 2048), Twilio placeholders, VPN defaults, calendar sync interval (30min), speedtest weights (download: 0.4, upload: 0.2, latency: 0.2, jitter: 0.1, dns: 0.1)",
-    "files": ["config/wayfi.yaml"],
+    "files": [
+      "config/wayfi.yaml"
+    ],
     "done": false
   },
   {
     "id": 3,
     "phase": "foundation",
     "task": "Build encrypted vault module src/wayfi/vault/vault.py: Vault class with AES-256-GCM encryption using PyCryptodome, Argon2id key derivation from user passphrase, SQLite backend with fields (email, email_throwaway, first_name, last_name, phone, loyalty_hilton, loyalty_marriott, loyalty_ihg, room_number, room_number_expiry, company, custom_fields JSON), CRUD methods (get_credential, set_credential, delete_credential, get_all, set_room_number with expiry), unlock/lock methods, 24h key cache in memory (tmpfs-safe). SQLite WAL mode enabled.",
-    "files": ["src/wayfi/vault/vault.py", "src/wayfi/vault/__init__.py"],
+    "files": [
+      "src/wayfi/vault/vault.py",
+      "src/wayfi/vault/__init__.py"
+    ],
     "done": false
   },
   {
     "id": 4,
     "phase": "foundation",
     "task": "Build WiFi scanner and connection manager: src/wayfi/network/scanner.py with async WiFiScanner class wrapping wpa_cli (scan, scan_results parsing into dataclass with ssid, bssid, signal, security, frequency), event-driven interface using wpa_cli CTRL-EVENT-* monitoring via asyncio subprocess. src/wayfi/network/connector.py with async WiFiConnector class (connect_to_network, disconnect, get_current_network, wait_for_dhcp with 5s timeout, monitor_connection). All wpa_cli calls wrapped in async lock to prevent race conditions.",
-    "files": ["src/wayfi/network/scanner.py", "src/wayfi/network/connector.py", "src/wayfi/network/__init__.py"],
+    "files": [
+      "src/wayfi/network/scanner.py",
+      "src/wayfi/network/connector.py",
+      "src/wayfi/network/__init__.py"
+    ],
     "done": false
   },
   {
     "id": 5,
     "phase": "foundation",
-    "task": "Build captive portal detector src/wayfi/portal/detector.py: async PortalDetector class that sends HTTP GET to http://connectivitycheck.gstatic.com/generate_204 with 2s timeout using aiohttp. Detect portal if response is 302 redirect or 200 with body content. Return PortalResult dataclass (is_captive: bool, redirect_url: str, portal_html: str — prefetch HTML in same request cycle). Include fallback probe URLs (http://captive.apple.com, http://detectportal.firefox.com). Fire immediately on DHCP lease.",
-    "files": ["src/wayfi/portal/detector.py", "src/wayfi/portal/__init__.py"],
+    "task": "Build captive portal detector src/wayfi/portal/detector.py: async PortalDetector class that sends HTTP GET to http://connectivitycheck.gstatic.com/generate_204 with 2s timeout using aiohttp. Detect portal if response is 302 redirect or 200 with body content. Return PortalResult dataclass (is_captive: bool, redirect_url: str, portal_html: str \u2014 prefetch HTML in same request cycle). Include fallback probe URLs (http://captive.apple.com, http://detectportal.firefox.com). Fire immediately on DHCP lease.",
+    "files": [
+      "src/wayfi/portal/detector.py",
+      "src/wayfi/portal/__init__.py"
+    ],
     "done": false
   },
   {
     "id": 6,
     "phase": "foundation",
-    "task": "Build Twilio bidirectional SMS service src/wayfi/notify/sms.py: async TwilioNotifier class with outbound SMS (send_connection_success, send_portal_failure, send_connection_lost, send_reconnection, send_quality_alert, send_room_number_request) using Twilio Python SDK. Inbound webhook handler (FastAPI route /webhook/sms) for room number replies — parse room number and stay duration from reply text (e.g. '1412, 3 nights'), pass to vault for caching. Message templates matching PRD notification events exactly.",
-    "files": ["src/wayfi/notify/sms.py", "src/wayfi/notify/__init__.py"],
+    "task": "Build Twilio bidirectional SMS service src/wayfi/notify/sms.py: async TwilioNotifier class with outbound SMS (send_connection_success, send_portal_failure, send_connection_lost, send_reconnection, send_quality_alert, send_room_number_request) using Twilio Python SDK. Inbound webhook handler (FastAPI route /webhook/sms) for room number replies \u2014 parse room number and stay duration from reply text (e.g. '1412, 3 nights'), pass to vault for caching. Message templates matching PRD notification events exactly.",
+    "files": [
+      "src/wayfi/notify/sms.py",
+      "src/wayfi/notify/__init__.py"
+    ],
     "done": false
   },
   {
     "id": 7,
     "phase": "foundation",
-    "task": "Build speed test and network quality scorer: src/wayfi/network/speedtest.py with async SpeedTester class — multi-connection HTTP download test to speed.cloudflare.com, upload test, ICMP ping to 1.1.1.1 and 8.8.8.8 (10 samples, compute average + jitter as stddev), DNS resolution timing for 5 common domains. src/wayfi/network/scorer.py with NetworkScorer class — compute composite 1-10 score using configurable weights (download 40%, upload 20%, latency 20%, jitter 10%, DNS 10%). Return SpeedResult and QualityScore dataclasses.",
-    "files": ["src/wayfi/network/speedtest.py", "src/wayfi/network/scorer.py"],
+    "task": "Build speed test and network quality scorer: src/wayfi/network/speedtest.py with async SpeedTester class \u2014 multi-connection HTTP download test to speed.cloudflare.com, upload test, ICMP ping to 1.1.1.1 and 8.8.8.8 (10 samples, compute average + jitter as stddev), DNS resolution timing for 5 common domains. src/wayfi/network/scorer.py with NetworkScorer class \u2014 compute composite 1-10 score using configurable weights (download 40%, upload 20%, latency 20%, jitter 10%, DNS 10%). Return SpeedResult and QualityScore dataclasses.",
+    "files": [
+      "src/wayfi/network/speedtest.py",
+      "src/wayfi/network/scorer.py"
+    ],
     "done": false
   },
   {
     "id": 8,
     "phase": "foundation",
     "task": "Build hostapd/dnsmasq AP configuration generator src/wayfi/network/ap.py: APManager class that generates hostapd.conf (interface wlan1, SSID from config, WPA2-PSK, 802.11ac, channel selection) and dnsmasq.conf (DHCP range 192.168.8.10-192.168.8.250, DNS forwarding, interface binding). Methods: generate_configs(), start_ap(), stop_ap(), restart_ap(). Also configure iptables NAT masquerade from wlan1 to wlan0. Manage processes via subprocess.",
-    "files": ["src/wayfi/network/ap.py"],
+    "files": [
+      "src/wayfi/network/ap.py"
+    ],
     "done": false
   },
   {
     "id": 9,
     "phase": "intelligence",
     "task": "Build heuristic portal pattern engine src/wayfi/portal/heuristic.py: HeuristicEngine class that loads YAML pattern files from src/wayfi/portal/patterns/ at boot, compiles all regex patterns once (not at match time). match(portal_html, portal_url) method tries each pattern's detection signals against URL and HTML. Returns HeuristicMatch dataclass (vendor, pattern_name, solve_strategy: dict with action_url, method, fields mapping). Supports field value interpolation from vault credentials (e.g. {vault.room_number}, {vault.last_name}). Sub-50ms target.",
-    "files": ["src/wayfi/portal/heuristic.py"],
+    "files": [
+      "src/wayfi/portal/heuristic.py"
+    ],
     "done": false
   },
   {
     "id": 10,
     "phase": "intelligence",
-    "task": "Create initial portal pattern library — 11 YAML vendor files in src/wayfi/portal/patterns/: nomadix.yaml (URL contains nomadix/gateway.hotel, POST room+last_name), antlabs.yaml (/hsp/ path, room_num+guest_name+accept_tos), aruba.yaml (/guest/ URL, email+name+TOS), cisco.yaml (/portal/ path, POST credentials), ruckus.yaml (cloudpath/ruckuswireless, email+terms), hilton.yaml (hhonors/hilton domain, loyalty+last_name), marriott.yaml (room+last_name+accept), ihg.yaml (room+last_name+accept), boingo.yaml (email+TOS+ad interstitial), starbucks.yaml (accept button click-through), generic.yaml (single form with submit button, POST hidden fields). Each YAML has: name, vendor, detection_signals (url_patterns, html_signals), solve_strategy (action_url_pattern, method, fields with vault interpolation tokens, checkboxes).",
-    "files": ["src/wayfi/portal/patterns/nomadix.yaml", "src/wayfi/portal/patterns/antlabs.yaml", "src/wayfi/portal/patterns/aruba.yaml", "src/wayfi/portal/patterns/cisco.yaml", "src/wayfi/portal/patterns/ruckus.yaml", "src/wayfi/portal/patterns/hilton.yaml", "src/wayfi/portal/patterns/marriott.yaml", "src/wayfi/portal/patterns/ihg.yaml", "src/wayfi/portal/patterns/boingo.yaml", "src/wayfi/portal/patterns/starbucks.yaml", "src/wayfi/portal/patterns/generic.yaml"],
+    "task": "Create initial portal pattern library \u2014 11 YAML vendor files in src/wayfi/portal/patterns/: nomadix.yaml (URL contains nomadix/gateway.hotel, POST room+last_name), antlabs.yaml (/hsp/ path, room_num+guest_name+accept_tos), aruba.yaml (/guest/ URL, email+name+TOS), cisco.yaml (/portal/ path, POST credentials), ruckus.yaml (cloudpath/ruckuswireless, email+terms), hilton.yaml (hhonors/hilton domain, loyalty+last_name), marriott.yaml (room+last_name+accept), ihg.yaml (room+last_name+accept), boingo.yaml (email+TOS+ad interstitial), starbucks.yaml (accept button click-through), generic.yaml (single form with submit button, POST hidden fields). Each YAML has: name, vendor, detection_signals (url_patterns, html_signals), solve_strategy (action_url_pattern, method, fields with vault interpolation tokens, checkboxes).",
+    "files": [
+      "src/wayfi/portal/patterns/nomadix.yaml",
+      "src/wayfi/portal/patterns/antlabs.yaml",
+      "src/wayfi/portal/patterns/aruba.yaml",
+      "src/wayfi/portal/patterns/cisco.yaml",
+      "src/wayfi/portal/patterns/ruckus.yaml",
+      "src/wayfi/portal/patterns/hilton.yaml",
+      "src/wayfi/portal/patterns/marriott.yaml",
+      "src/wayfi/portal/patterns/ihg.yaml",
+      "src/wayfi/portal/patterns/boingo.yaml",
+      "src/wayfi/portal/patterns/starbucks.yaml",
+      "src/wayfi/portal/patterns/generic.yaml"
+    ],
     "done": false
   },
   {
     "id": 11,
     "phase": "intelligence",
-    "task": "Build portal form submitter src/wayfi/portal/submitter.py: async PortalSubmitter class with requests-based submission using CookieJar session — submit_form(action_url, method, fields, cookies) following redirects. Track success by re-probing connectivity check after submission. For JS-dependent portals: Playwright ARM64 fallback (single browser instance pool, cap at 1) with page.fill() and page.click() for form interaction. Portal fingerprinting: hash form structure (sorted field names + action URL pattern) for solve caching — cache the strategy, not the payload.",
-    "files": ["src/wayfi/portal/submitter.py"],
+    "task": "Build portal form submitter src/wayfi/portal/submitter.py: async PortalSubmitter class with requests-based submission using CookieJar session \u2014 submit_form(action_url, method, fields, cookies) following redirects. Track success by re-probing connectivity check after submission. For JS-dependent portals: Playwright ARM64 fallback (single browser instance pool, cap at 1) with page.fill() and page.click() for form interaction. Portal fingerprinting: hash form structure (sorted field names + action URL pattern) for solve caching \u2014 cache the strategy, not the payload.",
+    "files": [
+      "src/wayfi/portal/submitter.py"
+    ],
     "done": false
   },
   {
     "id": 12,
     "phase": "intelligence",
-    "task": "Build LLM solver integration src/wayfi/portal/llm_solver.py: async LLMSolver class that sends cleaned portal HTML to llama.cpp OpenAI-compatible API at localhost:8080. HTML cleaning: preserve form/input/select/button/label/a tags with all attributes, strip script/style/img/svg/comments, keep noscript content. Prompt template with 2-3 few-shot examples, requesting JSON output {action_url, method, fields: {name: value}, checkboxes: [name]}. Use GBNF grammar constraint for valid JSON. Streaming response parsing — detect valid JSON before generation completes and stop early. 30s timeout. Map LLM-suggested fields to vault credentials.",
-    "files": ["src/wayfi/portal/llm_solver.py"],
+    "task": "Build LLM solver integration src/wayfi/portal/llm_solver.py: async LLMSolver class that sends cleaned portal HTML to llama.cpp OpenAI-compatible API at localhost:8080. HTML cleaning: preserve form/input/select/button/label/a tags with all attributes, strip script/style/img/svg/comments, keep noscript content. Prompt template with 2-3 few-shot examples, requesting JSON output {action_url, method, fields: {name: value}, checkboxes: [name]}. Use GBNF grammar constraint for valid JSON. Streaming response parsing \u2014 detect valid JSON before generation completes and stop early. 30s timeout. Map LLM-suggested fields to vault credentials.",
+    "files": [
+      "src/wayfi/portal/llm_solver.py"
+    ],
     "done": false
   },
   {
     "id": 13,
     "phase": "intelligence",
     "task": "Build cloud API fallback solver src/wayfi/portal/cloud_solver.py: async CloudSolver class that detects iPhone USB tethering interface (en0/usb0), routes API calls through it, and sends cleaned portal HTML to Claude API (anthropic SDK) or OpenAI API as configured. Same prompt template and JSON schema as LLM solver. Fallback order: try Claude first, then OpenAI. Timeout: 15s per attempt. Return same structured output as LLMSolver for uniform handling by submitter.",
-    "files": ["src/wayfi/portal/cloud_solver.py"],
+    "files": [
+      "src/wayfi/portal/cloud_solver.py"
+    ],
     "done": false
   },
   {
     "id": 14,
     "phase": "intelligence",
     "task": "Build iCloud calendar provider src/wayfi/calendar/icloud.py: async ICloudCalendar class using caldav library. Connect to caldav.icloud.com with app-specific password from vault. Fetch events for current day + 7 days. Parse VEVENT objects, extract summary, location, dtstart, dtend. Return list of CalendarEvent dataclasses.",
-    "files": ["src/wayfi/calendar/icloud.py", "src/wayfi/calendar/__init__.py"],
+    "files": [
+      "src/wayfi/calendar/icloud.py",
+      "src/wayfi/calendar/__init__.py"
+    ],
     "done": false
   },
   {
     "id": 15,
     "phase": "intelligence",
     "task": "Build Google Calendar provider src/wayfi/calendar/google.py: async GoogleCalendar class using google-api-python-client. OAuth 2.0 device flow for initial auth, store refresh token in vault. List events for current day + 7 days via Calendar API v3. Parse event location, summary, start/end times. Handle token refresh automatically.",
-    "files": ["src/wayfi/calendar/google.py"],
+    "files": [
+      "src/wayfi/calendar/google.py"
+    ],
     "done": false
   },
   {
     "id": 16,
     "phase": "intelligence",
     "task": "Build Microsoft Outlook calendar provider src/wayfi/calendar/outlook.py: async OutlookCalendar class using msal library. OAuth 2.0 device code flow for initial auth, store refresh token in vault. Query Microsoft Graph API /me/calendarview for current day + 7 days. Parse event location, subject, start/end times.",
-    "files": ["src/wayfi/calendar/outlook.py"],
+    "files": [
+      "src/wayfi/calendar/outlook.py"
+    ],
     "done": false
   },
   {
     "id": 17,
     "phase": "intelligence",
-    "task": "Build calendar sync coordinator and location intelligence: src/wayfi/calendar/sync.py — async CalendarSync daemon that runs every 30 minutes, aggregates events from all configured providers, deduplicates. src/wayfi/calendar/location.py — LocationMatcher class that parses venue name/city/address from event location strings, matches against known-network database (hotel chain name → SSID pattern + heuristic pattern + credential set), extracts check-in/check-out dates from multi-day events for room number cache duration. Pre-loads appropriate pattern + credentials before arrival.",
-    "files": ["src/wayfi/calendar/sync.py", "src/wayfi/calendar/location.py"],
+    "task": "Build calendar sync coordinator and location intelligence: src/wayfi/calendar/sync.py \u2014 async CalendarSync daemon that runs every 30 minutes, aggregates events from all configured providers, deduplicates. src/wayfi/calendar/location.py \u2014 LocationMatcher class that parses venue name/city/address from event location strings, matches against known-network database (hotel chain name \u2192 SSID pattern + heuristic pattern + credential set), extracts check-in/check-out dates from multi-day events for room number cache duration. Pre-loads appropriate pattern + credentials before arrival.",
+    "files": [
+      "src/wayfi/calendar/sync.py",
+      "src/wayfi/calendar/location.py"
+    ],
     "done": false
   },
   {
     "id": 18,
     "phase": "intelligence",
     "task": "Update network scorer (src/wayfi/network/scorer.py) to integrate calendar location intelligence: add calendar_score_boost method that adds +50 points for calendar location match and +30 for known network DB match to the network selection scoring. NetworkSelector class that combines signal strength, calendar boost, known network bonus, and open network preference to rank scan results and select the best candidate.",
-    "files": ["src/wayfi/network/scorer.py"],
+    "files": [
+      "src/wayfi/network/scorer.py"
+    ],
     "done": false
   },
   {
     "id": 19,
     "phase": "integration",
     "task": "Build orchestrator state machine src/wayfi/orchestrator.py: async Orchestrator class implementing the 9-state control loop (BOOT, SCAN, SELECT, CONNECT, DETECT_PORTAL, SOLVE_PORTAL, VERIFY, POST_AUTH, MONITOR). Wire all Phase 2+3 modules. BOOT: init interfaces, load vault, start LLM warm-up, sync calendar (<12s target). SCAN: trigger scanner, process results as they stream. SELECT: use scorer with calendar intelligence. CONNECT: use connector with 5s DHCP timeout. DETECT_PORTAL: fire probe immediately on DHCP. SOLVE_PORTAL: run heuristic and LLM in parallel (first wins), handle room number flow via SMS, cloud fallback. VERIFY: re-probe, retry max 3x, try next network on fail. POST_AUTH: asyncio.gather VPN + speedtest, then SMS (<8s). MONITOR: connectivity check every 15s/60s, reconnect on drop.",
-    "files": ["src/wayfi/orchestrator.py"],
+    "files": [
+      "src/wayfi/orchestrator.py"
+    ],
     "done": false
   },
   {
     "id": 20,
     "phase": "integration",
     "task": "Build VPN per-network policy engine src/wayfi/vpn/manager.py: async VPNManager class supporting WireGuard (wg-quick up/down) and OpenVPN (openvpn --config). Per-network policies: always (activate immediately post-auth), never (skip), ask (send SMS to user, wait for reply). Load WireGuard profiles from /etc/wireguard/, OpenVPN from /etc/openvpn/client/. Methods: activate_vpn(network_profile), deactivate_vpn(), get_vpn_status(). Handle policy lookup from network profile database.",
-    "files": ["src/wayfi/vpn/manager.py", "src/wayfi/vpn/__init__.py"],
+    "files": [
+      "src/wayfi/vpn/manager.py",
+      "src/wayfi/vpn/__init__.py"
+    ],
     "done": false
   },
   {
     "id": 21,
     "phase": "integration",
-    "task": "Build FastAPI web UI — app skeleton and core routes: src/wayfi/webui/app.py (FastAPI app, CORS, static files mount, Jinja2 templates), src/wayfi/webui/routers/status.py (GET /api/status — connection state, current network, quality score, VPN status, uptime), src/wayfi/webui/routers/vault.py (GET/POST/DELETE /api/vault — credential CRUD, vault unlock/lock endpoints, room number management). Base HTML template with navigation. Served on 192.168.8.1:80.",
-    "files": ["src/wayfi/webui/app.py", "src/wayfi/webui/routers/status.py", "src/wayfi/webui/routers/vault.py"],
+    "task": "Build FastAPI web UI \u2014 app skeleton and core routes: src/wayfi/webui/app.py (FastAPI app, CORS, static files mount, Jinja2 templates), src/wayfi/webui/routers/status.py (GET /api/status \u2014 connection state, current network, quality score, VPN status, uptime), src/wayfi/webui/routers/vault.py (GET/POST/DELETE /api/vault \u2014 credential CRUD, vault unlock/lock endpoints, room number management). Base HTML template with navigation. Served on 192.168.8.1:80.",
+    "files": [
+      "src/wayfi/webui/app.py",
+      "src/wayfi/webui/routers/status.py",
+      "src/wayfi/webui/routers/vault.py"
+    ],
     "done": false
   },
   {
     "id": 22,
     "phase": "integration",
-    "task": "Build FastAPI web UI — network, pattern, and calendar routes: src/wayfi/webui/routers/networks.py (GET/POST/DELETE /api/networks — saved network profiles with VPN policy, portal solve history), src/wayfi/webui/routers/patterns.py (GET/POST/PUT/DELETE /api/patterns — custom heuristic pattern CRUD, YAML editor), src/wayfi/webui/routers/calendar.py (GET/POST/DELETE /api/calendars — add/remove calendar sources, view upcoming location matches and predicted networks).",
-    "files": ["src/wayfi/webui/routers/networks.py", "src/wayfi/webui/routers/patterns.py", "src/wayfi/webui/routers/calendar.py"],
+    "task": "Build FastAPI web UI \u2014 network, pattern, and calendar routes: src/wayfi/webui/routers/networks.py (GET/POST/DELETE /api/networks \u2014 saved network profiles with VPN policy, portal solve history), src/wayfi/webui/routers/patterns.py (GET/POST/PUT/DELETE /api/patterns \u2014 custom heuristic pattern CRUD, YAML editor), src/wayfi/webui/routers/calendar.py (GET/POST/DELETE /api/calendars \u2014 add/remove calendar sources, view upcoming location matches and predicted networks).",
+    "files": [
+      "src/wayfi/webui/routers/networks.py",
+      "src/wayfi/webui/routers/patterns.py",
+      "src/wayfi/webui/routers/calendar.py"
+    ],
     "done": false
   },
   {
     "id": 23,
     "phase": "integration",
-    "task": "Build FastAPI web UI — settings, logs, and frontend: src/wayfi/webui/routers/settings.py (GET/POST /api/settings — Twilio config, AP settings SSID/password, LLM model selection, monitoring interval), src/wayfi/webui/routers/logs.py (GET /api/logs — stream orchestrator, portal solver, LLM inference logs via SSE). Create Jinja2 HTML templates: base.html (nav, layout), dashboard.html (real-time status), vault.html, networks.html, patterns.html, calendar.html, settings.html, logs.html. Minimal CSS (clean, mobile-friendly). Static JS for API calls and real-time updates.",
-    "files": ["src/wayfi/webui/routers/settings.py", "src/wayfi/webui/routers/logs.py", "src/wayfi/webui/templates/base.html", "src/wayfi/webui/templates/dashboard.html", "src/wayfi/webui/static/main.js", "src/wayfi/webui/static/style.css"],
+    "task": "Build FastAPI web UI \u2014 settings, logs, and frontend: src/wayfi/webui/routers/settings.py (GET/POST /api/settings \u2014 Twilio config, AP settings SSID/password, LLM model selection, monitoring interval), src/wayfi/webui/routers/logs.py (GET /api/logs \u2014 stream orchestrator, portal solver, LLM inference logs via SSE). Create Jinja2 HTML templates: base.html (nav, layout), dashboard.html (real-time status), vault.html, networks.html, patterns.html, calendar.html, settings.html, logs.html. Minimal CSS (clean, mobile-friendly). Static JS for API calls and real-time updates.",
+    "files": [
+      "src/wayfi/webui/routers/settings.py",
+      "src/wayfi/webui/routers/logs.py",
+      "src/wayfi/webui/templates/base.html",
+      "src/wayfi/webui/templates/dashboard.html",
+      "src/wayfi/webui/static/main.js",
+      "src/wayfi/webui/static/style.css"
+    ],
     "done": false
   },
   {
     "id": 24,
     "phase": "deployment",
     "task": "Create systemd unit files in scripts/systemd/ for all services: wayfi-orchestrator.service (main, Type=notify, After=wayfi-llm.service wayfi-webui.service, Restart=always, WatchdogSec=60), wayfi-llm.service (Type=simple, ExecStart=llama-server with model path and port 8080, pre-loaded at boot, cgroup memory reservation), wayfi-calendar.service (Type=simple, timer-based sync), wayfi-notifier.service (Type=simple, webhook listener), wayfi-webui.service (Type=simple, uvicorn on port 80), wayfi-hostapd.service, wayfi-dnsmasq.service. Proper dependency ordering: hostapd+dnsmasq first, then LLM, then orchestrator.",
-    "files": ["scripts/systemd/wayfi-orchestrator.service", "scripts/systemd/wayfi-llm.service", "scripts/systemd/wayfi-calendar.service", "scripts/systemd/wayfi-notifier.service", "scripts/systemd/wayfi-webui.service", "scripts/systemd/wayfi-hostapd.service", "scripts/systemd/wayfi-dnsmasq.service"],
+    "files": [
+      "scripts/systemd/wayfi-orchestrator.service",
+      "scripts/systemd/wayfi-llm.service",
+      "scripts/systemd/wayfi-calendar.service",
+      "scripts/systemd/wayfi-notifier.service",
+      "scripts/systemd/wayfi-webui.service",
+      "scripts/systemd/wayfi-hostapd.service",
+      "scripts/systemd/wayfi-dnsmasq.service"
+    ],
     "done": false
   },
   {
     "id": 25,
     "phase": "deployment",
     "task": "Create RPi provisioning script scripts/provision.sh: one-command setup from fresh Raspberry Pi OS Lite. Steps: apt update/upgrade, install system deps (hostapd, dnsmasq, wpa_supplicant, wireguard, openvpn, python3.11, python3-pip, cmake, build-essential), pip install wayfi package, download and compile llama.cpp with ARM NEON, download Llama-3.1-8B-Instruct-Q4_K_M GGUF model to models/, configure stripped kernel (mask bluetooth, audio, GUI services), set CPU governor to performance, configure tmpfs for /tmp and transient data, install systemd units, enable services, configure network interfaces, set up iptables NAT rules, install githooks. Script is idempotent.",
-    "files": ["scripts/provision.sh"],
+    "files": [
+      "scripts/provision.sh"
+    ],
     "done": false
   },
   {
     "id": 26,
     "phase": "testing",
     "task": "Build mock portal test server tests/mock_portal/server.py: lightweight HTTP server (aiohttp) that serves captive portal HTML fixtures. Create HTML fixtures in tests/mock_portal/portals/ for all 11 vendor patterns (nomadix.html, antlabs.html, aruba.html, cisco.html, ruckus.html, hilton.html, marriott.html, ihg.html, boingo.html, starbucks.html, generic.html). Each fixture is a realistic HTML page with forms matching vendor detection signals. Server returns 302 redirect to portal on initial probe, then serves portal HTML, accepts form POST and returns 200 on correct submission.",
-    "files": ["tests/mock_portal/server.py", "tests/mock_portal/portals/nomadix.html", "tests/mock_portal/portals/hilton.html", "tests/mock_portal/portals/generic.html"],
+    "files": [
+      "tests/mock_portal/server.py",
+      "tests/mock_portal/portals/nomadix.html",
+      "tests/mock_portal/portals/hilton.html",
+      "tests/mock_portal/portals/generic.html"
+    ],
     "done": false
   },
   {
     "id": 27,
     "phase": "testing",
     "task": "Write unit tests: tests/test_vault.py (encrypt/decrypt roundtrip, CRUD operations, Argon2id key derivation, room number with expiry, lock/unlock), tests/test_portal_detector.py (detect 302 redirect, detect 200 with body, detect no portal on 204, timeout handling), tests/test_heuristic.py (match each of 11 vendor patterns against fixture HTML, verify correct field mapping, verify vault interpolation, verify sub-50ms execution), tests/test_scanner.py (parse wpa_cli scan_results output, network dataclass creation, mock subprocess), tests/test_speedtest.py (mock HTTP download/upload, ping calculation, score computation with weights), tests/test_sms.py (outbound message formatting for all 6 event types, inbound room number parsing with various formats), tests/test_calendar.py (event parsing, location extraction, stay duration calculation, venue-to-network matching).",
-    "files": ["tests/conftest.py", "tests/test_vault.py", "tests/test_portal_detector.py", "tests/test_heuristic.py", "tests/test_scanner.py", "tests/test_speedtest.py", "tests/test_sms.py", "tests/test_calendar.py"],
+    "files": [
+      "tests/conftest.py",
+      "tests/test_vault.py",
+      "tests/test_portal_detector.py",
+      "tests/test_heuristic.py",
+      "tests/test_scanner.py",
+      "tests/test_speedtest.py",
+      "tests/test_sms.py",
+      "tests/test_calendar.py"
+    ],
     "done": false
   },
   {
     "id": 28,
     "phase": "testing",
-    "task": "Write integration tests tests/test_orchestrator.py: test full orchestrator flow against mock portal server. Test heuristic path: scan (mock wpa_cli) → connect (mock) → detect portal (mock server 302) → heuristic solve (Hilton pattern) → verify (mock server 204) → post-auth (mock speedtest + VPN). Test LLM path: unknown portal → heuristic miss → LLM solver (mock llama.cpp API) → submit → verify. Test failure path: all solvers fail → SMS alert. Test reconnection: connection drop → rescan → reconnect. Test room number flow: portal needs room → SMS sent → reply received → cached → solve succeeds. All tests use mocked subprocess (wpa_cli, iw) and mock HTTP servers.",
-    "files": ["tests/test_orchestrator.py", "tests/test_webui.py"],
+    "task": "Write integration tests tests/test_orchestrator.py: test full orchestrator flow against mock portal server. Test heuristic path: scan (mock wpa_cli) \u2192 connect (mock) \u2192 detect portal (mock server 302) \u2192 heuristic solve (Hilton pattern) \u2192 verify (mock server 204) \u2192 post-auth (mock speedtest + VPN). Test LLM path: unknown portal \u2192 heuristic miss \u2192 LLM solver (mock llama.cpp API) \u2192 submit \u2192 verify. Test failure path: all solvers fail \u2192 SMS alert. Test reconnection: connection drop \u2192 rescan \u2192 reconnect. Test room number flow: portal needs room \u2192 SMS sent \u2192 reply received \u2192 cached \u2192 solve succeeds. All tests use mocked subprocess (wpa_cli, iw) and mock HTTP servers.",
+    "files": [
+      "tests/test_orchestrator.py",
+      "tests/test_webui.py"
+    ],
     "done": false
   },
   {
     "id": 29,
     "phase": "testing",
-    "task": "Final validation: run full pytest suite and ensure all tests pass. Run Python linting (ruff or flake8). Verify all modules import cleanly (python -c 'import wayfi'). Verify pyproject.toml is installable (pip install -e .). Verify config/wayfi.yaml loads without errors. Verify all 11 pattern YAML files parse correctly. Verify systemd unit files have valid syntax (systemd-analyze verify). Smoke test: instantiate Orchestrator with all mocked dependencies and verify state machine transitions BOOT→SCAN→SELECT without errors. Check plan.md — all steps marked complete.",
-    "files": ["plan.md"],
+    "task": "Final validation: run full pytest suite and ensure all tests pass. Run Python linting (ruff or flake8). Verify all modules import cleanly (python -c 'import wayfi'). Verify pyproject.toml is installable (pip install -e .). Verify config/wayfi.yaml loads without errors. Verify all 11 pattern YAML files parse correctly. Verify systemd unit files have valid syntax (systemd-analyze verify). Smoke test: instantiate Orchestrator with all mocked dependencies and verify state machine transitions BOOT\u2192SCAN\u2192SELECT without errors. Check plan.md \u2014 all steps marked complete.",
+    "files": [
+      "plan.md"
+    ],
     "done": false
   }
 ]
