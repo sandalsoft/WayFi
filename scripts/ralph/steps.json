@@ -38,7 +38,7 @@
       "src/wayfi/network/connector.py",
       "src/wayfi/network/__init__.py"
     ],
-    "done": false
+    "done": true
   },
   {
     "id": 5,
