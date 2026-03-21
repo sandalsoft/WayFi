@@ -173,36 +173,36 @@ The PRD describes a well-scoped embedded systems project with clear module bound
 - [x] Step 1.2: Create `config/wayfi.yaml` with all default configuration values
 
 ### Phase 2: Foundation Modules (Parallelizable — No Interdependencies)
-- [ ] Step 2.1: Build encrypted vault module (`src/wayfi/vault/vault.py`) — AES-256-GCM + Argon2id + SQLite CRUD
-- [ ] Step 2.2: Build WiFi scanner and connection manager (`src/wayfi/network/scanner.py`, `connector.py`) — wpa_supplicant/iw wrapper with async event interface
-- [ ] Step 2.3: Build captive portal detector (`src/wayfi/portal/detector.py`) — HTTP probe engine with 2s timeout
-- [ ] Step 2.4: Build Twilio bidirectional SMS service (`src/wayfi/notify/sms.py`) — outbound notifications + inbound webhook for room number replies
-- [ ] Step 2.5: Build speed test and network quality scorer (`src/wayfi/network/speedtest.py`, `scorer.py`) — multi-metric composite scoring (1-10)
-- [ ] Step 2.6: Build hostapd/dnsmasq AP configuration generator (`src/wayfi/network/ap.py`) — config generation + process management
+- [x] Step 2.1: Build encrypted vault module (`src/wayfi/vault/vault.py`) — AES-256-GCM + Argon2id + SQLite CRUD
+- [x] Step 2.2: Build WiFi scanner and connection manager (`src/wayfi/network/scanner.py`, `connector.py`) — wpa_supplicant/iw wrapper with async event interface
+- [x] Step 2.3: Build captive portal detector (`src/wayfi/portal/detector.py`) — HTTP probe engine with 2s timeout
+- [x] Step 2.4: Build Twilio bidirectional SMS service (`src/wayfi/notify/sms.py`) — outbound notifications + inbound webhook for room number replies
+- [x] Step 2.5: Build speed test and network quality scorer (`src/wayfi/network/speedtest.py`, `scorer.py`) — multi-metric composite scoring (1-10)
+- [x] Step 2.6: Build hostapd/dnsmasq AP configuration generator (`src/wayfi/network/ap.py`) — config generation + process management
 
 ### Phase 3: Intelligence Layer (Sequential — Depends on Phase 2)
-- [ ] Step 3.1: Build heuristic portal pattern engine (`src/wayfi/portal/heuristic.py`) — YAML pattern loader, regex compilation at boot, pattern matching
-- [ ] Step 3.2: Create initial portal pattern library (11 vendor YAML files in `src/wayfi/portal/patterns/`)
-- [ ] Step 3.3: Build portal form submitter (`src/wayfi/portal/submitter.py`) — requests-based with CookieJar session, redirect following, Playwright heavyweight fallback
-- [ ] Step 3.4: Build LLM solver integration (`src/wayfi/portal/llm_solver.py`) — llama.cpp OpenAI-compatible API client + prompt templates + GBNF grammar for JSON output
-- [ ] Step 3.5: Build cloud API fallback solver (`src/wayfi/portal/cloud_solver.py`) — Claude/OpenAI API with hotspot detection and routing
-- [ ] Step 3.6: Build calendar sync daemon — iCloud CalDAV provider (`src/wayfi/calendar/icloud.py`)
-- [ ] Step 3.7: Build calendar sync daemon — Google Calendar API provider (`src/wayfi/calendar/google.py`)
-- [ ] Step 3.8: Build calendar sync daemon — Microsoft Outlook Graph provider (`src/wayfi/calendar/outlook.py`)
-- [ ] Step 3.9: Build calendar sync coordinator and location extraction (`src/wayfi/calendar/sync.py`, `location.py`) — venue matching, stay duration extraction, network prediction
-- [ ] Step 3.10: Build network selection scoring with calendar intelligence (`src/wayfi/network/scorer.py` update) — integrate calendar location matches into scoring weights
+- [x] Step 3.1: Build heuristic portal pattern engine (`src/wayfi/portal/heuristic.py`) — YAML pattern loader, regex compilation at boot, pattern matching
+- [x] Step 3.2: Create initial portal pattern library (11 vendor YAML files in `src/wayfi/portal/patterns/`)
+- [x] Step 3.3: Build portal form submitter (`src/wayfi/portal/submitter.py`) — requests-based with CookieJar session, redirect following, Playwright heavyweight fallback
+- [x] Step 3.4: Build LLM solver integration (`src/wayfi/portal/llm_solver.py`) — llama.cpp OpenAI-compatible API client + prompt templates + GBNF grammar for JSON output
+- [x] Step 3.5: Build cloud API fallback solver (`src/wayfi/portal/cloud_solver.py`) — Claude/OpenAI API with hotspot detection and routing
+- [x] Step 3.6: Build calendar sync daemon — iCloud CalDAV provider (`src/wayfi/calendar/icloud.py`)
+- [x] Step 3.7: Build calendar sync daemon — Google Calendar API provider (`src/wayfi/calendar/google.py`)
+- [x] Step 3.8: Build calendar sync daemon — Microsoft Outlook Graph provider (`src/wayfi/calendar/outlook.py`)
+- [x] Step 3.9: Build calendar sync coordinator and location extraction (`src/wayfi/calendar/sync.py`, `location.py`) — venue matching, stay duration extraction, network prediction
+- [x] Step 3.10: Build network selection scoring with calendar intelligence (`src/wayfi/network/scorer.py` update) — integrate calendar location matches into scoring weights
 
 ### Phase 4: Integration & Orchestration
-- [ ] Step 4.1: Build orchestrator state machine (`src/wayfi/orchestrator.py`) — full 9-state control loop wiring all Phase 2+3 modules with asyncio
-- [ ] Step 4.2: Build VPN per-network policy engine (`src/wayfi/vpn/manager.py`) — WireGuard/OpenVPN activation with always/never/ask policies
-- [ ] Step 4.3: Build FastAPI web UI — app skeleton, status dashboard, and vault management routes (`src/wayfi/webui/app.py`, `routers/status.py`, `routers/vault.py`)
-- [ ] Step 4.4: Build FastAPI web UI — network profiles, portal patterns, and calendar config routes (`routers/networks.py`, `routers/patterns.py`, `routers/calendar.py`)
-- [ ] Step 4.5: Build FastAPI web UI — settings, logs, and frontend templates (`routers/settings.py`, `routers/logs.py`, `templates/`, `static/`)
+- [x] Step 4.1: Build orchestrator state machine (`src/wayfi/orchestrator.py`) — full 9-state control loop wiring all Phase 2+3 modules with asyncio
+- [x] Step 4.2: Build VPN per-network policy engine (`src/wayfi/vpn/manager.py`) — WireGuard/OpenVPN activation with always/never/ask policies
+- [x] Step 4.3: Build FastAPI web UI — app skeleton, status dashboard, and vault management routes (`src/wayfi/webui/app.py`, `routers/status.py`, `routers/vault.py`)
+- [x] Step 4.4: Build FastAPI web UI — network profiles, portal patterns, and calendar config routes (`routers/networks.py`, `routers/patterns.py`, `routers/calendar.py`)
+- [x] Step 4.5: Build FastAPI web UI — settings, logs, and frontend templates (`routers/settings.py`, `routers/logs.py`, `templates/`, `static/`)
 
 ### Phase 5: Deployment & Testing
-- [ ] Step 5.1: Create systemd unit files for all services with dependency ordering and watchdog config (`scripts/systemd/`)
-- [ ] Step 5.2: Create RPi provisioning script (`scripts/provision.sh`) — one-command setup from fresh Raspberry Pi OS Lite
-- [ ] Step 5.3: Build mock portal test server (`tests/mock_portal/server.py`) with HTML fixtures for all 11 vendor patterns
-- [ ] Step 5.4: Write unit tests for vault, portal detector, heuristic engine, scanner, speedtest, SMS, and calendar modules
-- [ ] Step 5.5: Write integration tests — full orchestrator flow against mock portal server (heuristic path + LLM path)
-- [ ] Step 5.6: Final validation — lint, type check, test suite green, verify all modules import cleanly, smoke test orchestrator startup sequence
+- [x] Step 5.1: Create systemd unit files for all services with dependency ordering and watchdog config (`scripts/systemd/`)
+- [x] Step 5.2: Create RPi provisioning script (`scripts/provision.sh`) — one-command setup from fresh Raspberry Pi OS Lite
+- [x] Step 5.3: Build mock portal test server (`tests/mock_portal/server.py`) with HTML fixtures for all 11 vendor patterns
+- [x] Step 5.4: Write unit tests for vault, portal detector, heuristic engine, scanner, speedtest, SMS, and calendar modules
+- [x] Step 5.5: Write integration tests — full orchestrator flow against mock portal server (heuristic path + LLM path)
+- [x] Step 5.6: Final validation — lint, type check, test suite green, verify all modules import cleanly, smoke test orchestrator startup sequence
