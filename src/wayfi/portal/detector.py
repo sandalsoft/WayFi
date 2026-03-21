@@ -43,7 +43,7 @@ class PortalDetector:
         timeout: float = 2.0,
     ) -> None:
         self.probe_url = probe_url
-        self.fallbacks = fallbacks or FALLBACK_PROBES
+        self.fallbacks = fallbacks if fallbacks is not None else FALLBACK_PROBES
         self.timeout = timeout
 
     async def detect(self) -> PortalResult:
