@@ -14,15 +14,36 @@
             <a href="/vault">Vault</a>
             <a href="/networks">Networks</a>
             <a href="/patterns">Patterns</a>
-            <a href="/calendar">Calendar</a>
             <a href="/settings">Settings</a>
             <a href="/logs">Logs</a>
+        </div>
+        <div class="nav-status">
+            <span class="status-dot" id="nav-dot"></span>
+            <span id="nav-state">--</span>
         </div>
     </nav>
     <main class="container">
         {% block content %}{% endblock %}
     </main>
     <script src="/static/main.js"></script>
+    <script>
+    async function updateNavStatus() {
+        try {
+            const r = await fetch('/api/status')
+            const d = await r.json()
+            const dot = document.getElementById('nav-dot')
+            const label = document.getElementById('nav-state')
+            const state = d.state || 'unknown'
+            label.textContent = d.ssid ? d.ssid : state
+            dot.className = 'status-dot'
+            if (state === 'MONITOR' || state === 'POST_AUTH') dot.classList.add('connected')
+            else if (state === 'SOLVE_PORTAL' || state === 'DETECT_PORTAL') dot.classList.add('solving')
+            else if (state === 'unknown') dot.classList.add('error')
+        } catch(e) {}
+    }
+    updateNavStatus()
+    setInterval(updateNavStatus, 5000)
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

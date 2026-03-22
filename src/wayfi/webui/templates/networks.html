@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Networks{% endblock %}
+{% block content %}
+<h1>Networks</h1>
+
+<div class="section">
+    <div class="section-header">
+        <h2>Saved Profiles</h2>
+    </div>
+    <table>
+        <thead><tr><th>SSID</th><th>VPN Policy</th><th></th></tr></thead>
+        <tbody id="saved-body"></tbody>
+    </table>
+    <div id="saved-empty" class="empty">No saved networks</div>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <h2>Add Network</h2>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>SSID</label>
+            <input type="text" id="net-ssid" placeholder="Network name">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="net-pass" placeholder="Leave blank for open networks">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>VPN Policy</label>
+            <select id="net-vpn">
+                <option value="always">Always</option>
+                <option value="never">Never</option>
+                <option value="ask">Ask</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Notes</label>
+            <input type="text" id="net-notes" placeholder="Optional">
+        </div>
+    </div>
+    <button onclick="saveNetwork()">Save Network</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadNetworks() {
+    try {
+        const d = await apiCall('GET', '/api/networks')
+        const tbody = document.getElementById('saved-body')
+        const empty = document.getElementById('saved-empty')
+        if (d.networks.length === 0) {
+            tbody.innerHTML = ''
+            empty.style.display = 'block'
+            return
+        }
+        empty.style.display = 'none'
+        tbody.innerHTML = d.networks.map(n =>
+            '<tr><td>' + n.ssid + '</td>' +
+            '<td>' + badge(n.vpn_policy, n.vpn_policy === 'always' ? 'success' : n.vpn_policy === 'never' ? 'danger' : 'warning') + '</td>' +
+            '<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteNetwork(\'' + n.ssid + '\')">Remove</button></td></tr>'
+        ).join('')
+    } catch(e) {}
+}
+
+async function saveNetwork() {
+    const ssid = document.getElementById('net-ssid').value
+    if (!ssid) return
+    try {
+        await apiCall('POST', '/api/networks', {
+            ssid,
+            password: document.getElementById('net-pass').value,
+            vpn_policy: document.getElementById('net-vpn').value,
+            notes: document.getElementById('net-notes').value
+        })
+        toast('Saved ' + ssid)
+        document.getElementById('net-ssid').value = ''
+        document.getElementById('net-pass').value = ''
+        document.getElementById('net-notes').value = ''
+        loadNetworks()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+async function deleteNetwork(ssid) {
+    try {
+        await apiCall('DELETE', '/api/networks/' + encodeURIComponent(ssid))
+        toast('Removed ' + ssid)
+        loadNetworks()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+loadNetworks()
+</script>
+{% endblock %}

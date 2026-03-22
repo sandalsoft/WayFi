@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1>WayFi Status</h1>
+<h1>Dashboard</h1>
+
 <div class="status-grid" id="status">
     <div class="card">
         <h3>State</h3>
@@ -13,42 +14,98 @@
         <p id="ip" class="detail">--</p>
     </div>
     <div class="card">
-        <h3>Quality</h3>
+        <h3>Signal</h3>
         <p id="quality" class="value">--</p>
+    </div>
+    <div class="card">
+        <h3>Portal</h3>
+        <p id="portal" class="value">--</p>
+        <p id="portal-detail" class="detail"></p>
     </div>
     <div class="card">
         <h3>VPN</h3>
         <p id="vpn" class="value">--</p>
     </div>
     <div class="card">
-        <h3>Portal</h3>
-        <p id="portal" class="value">--</p>
-    </div>
-    <div class="card">
         <h3>Uptime</h3>
         <p id="uptime" class="value">--</p>
     </div>
 </div>
+
+<div class="section">
+    <div class="section-header">
+        <h2>AP Clients</h2>
+        <span id="client-count" class="badge badge-dim">0</span>
+    </div>
+    <div id="clients" class="empty">No clients connected</div>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <h2>Recent Logs</h2>
+        <a href="/logs" class="btn btn-sm btn-outline">View all</a>
+    </div>
+    <div id="recent-logs" class="log-container" style="max-height:200px"></div>
+</div>
 {% endblock %}
+
 {% block scripts %}
 <script>
+const stateColors = {
+    BOOT: 'accent', SCAN: 'accent', SELECT: 'accent',
+    CONNECT: 'warning', DETECT_PORTAL: 'warning', SOLVE_PORTAL: 'warning',
+    VERIFY: 'accent', POST_AUTH: 'success', MONITOR: 'success',
+    unknown: 'danger'
+}
+
 async function refreshStatus() {
     try {
-        const resp = await fetch('/api/status');
-        const data = await resp.json();
-        document.getElementById('state').textContent = data.state;
-        document.getElementById('ssid').textContent = data.ssid || 'Not connected';
-        document.getElementById('ip').textContent = data.ip_address || '';
-        document.getElementById('quality').textContent = data.quality_score ? data.quality_score + '/10' : '--';
-        document.getElementById('vpn').textContent = data.vpn_active ? 'Active' : 'Inactive';
-        document.getElementById('portal').textContent = data.portal_solved ? 'Solved' : 'Pending';
-        const mins = Math.floor(data.uptime_seconds / 60);
-        document.getElementById('uptime').textContent = mins + 'm';
+        const resp = await fetch('/api/status')
+        const d = await resp.json()
+        const state = d.state || 'unknown'
+        const stateEl = document.getElementById('state')
+        stateEl.textContent = state
+        stateEl.className = 'value ' + (stateColors[state] || '')
+
+        document.getElementById('ssid').textContent = d.ssid || 'Not connected'
+        document.getElementById('ip').textContent = d.ip_address || ''
+
+        const q = d.quality_score
+        const qEl = document.getElementById('quality')
+        qEl.textContent = q ? q + '/10' : '--'
+        qEl.className = 'value ' + (q >= 7 ? 'success' : q >= 4 ? 'warning' : q ? 'danger' : '')
+
+        const vpnEl = document.getElementById('vpn')
+        vpnEl.textContent = d.vpn_active ? 'Active' : 'Off'
+        vpnEl.className = 'value ' + (d.vpn_active ? 'success' : '')
+
+        const portalEl = document.getElementById('portal')
+        portalEl.textContent = d.portal_solved ? 'Solved' : state === 'SOLVE_PORTAL' ? 'Solving...' : 'None'
+        portalEl.className = 'value ' + (d.portal_solved ? 'success' : state === 'SOLVE_PORTAL' ? 'warning' : '')
+
+        document.getElementById('uptime').textContent = formatTime(d.uptime_seconds)
     } catch (e) {
-        document.getElementById('state').textContent = 'error';
+        document.getElementById('state').textContent = 'offline'
+        document.getElementById('state').className = 'value danger'
     }
 }
-refreshStatus();
-setInterval(refreshStatus, 5000);
+
+async function refreshLogs() {
+    try {
+        const resp = await fetch('/api/logs?limit=15')
+        const d = await resp.json()
+        const container = document.getElementById('recent-logs')
+        container.innerHTML = d.logs.map(l => {
+            const level = l.includes('ERROR') ? 'ERROR' : l.includes('WARNING') ? 'WARNING' : 'INFO'
+            return '<div class="log-line ' + level + '">' + l.replace(/</g, '&lt;') + '</div>'
+        }).join('')
+        container.scrollTop = container.scrollHeight
+    } catch(e) {}
+}
+
+refreshStatus()
+refreshLogs()
+setInterval(refreshStatus, 5000)
+setInterval(refreshLogs, 5000)
 </script>
 {% endblock %}

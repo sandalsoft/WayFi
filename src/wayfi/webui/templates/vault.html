@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Vault{% endblock %}
+{% block content %}
+<h1>Credential Vault</h1>
+
+<div id="vault-setup" class="section" style="display:none">
+    <h2>Setup</h2>
+    <p class="detail" style="margin-bottom:1rem">Create a passphrase to encrypt your credentials.</p>
+    <div class="form-group">
+        <label>Passphrase</label>
+        <input type="password" id="init-pass" placeholder="Choose a strong passphrase">
+    </div>
+    <button onclick="initVault()">Initialize Vault</button>
+</div>
+
+<div id="vault-locked" class="section" style="display:none">
+    <h2>Unlock</h2>
+    <div class="form-group">
+        <label>Passphrase</label>
+        <input type="password" id="unlock-pass" placeholder="Enter passphrase" onkeydown="if(event.key==='Enter')unlockVault()">
+    </div>
+    <button onclick="unlockVault()">Unlock</button>
+</div>
+
+<div id="vault-unlocked" style="display:none">
+    <div class="section">
+        <div class="section-header">
+            <h2>Room Number</h2>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Room</label>
+                <input type="text" id="room-number" placeholder="e.g. 412">
+            </div>
+            <div class="form-group">
+                <label>Nights</label>
+                <input type="number" id="room-nights" value="1" min="1" max="30">
+            </div>
+        </div>
+        <div class="btn-group">
+            <button onclick="saveRoom()">Save Room</button>
+            <span id="current-room" class="detail" style="align-self:center"></span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>Credentials</h2>
+            <button class="btn btn-sm" onclick="showAddCred()">Add</button>
+        </div>
+        <div id="add-cred-form" style="display:none;margin-bottom:1rem">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="cred-name" placeholder="e.g. email_throwaway">
+                </div>
+                <div class="form-group">
+                    <label>Value</label>
+                    <input type="text" id="cred-value" placeholder="e.g. travel@example.com">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button onclick="saveCred()">Save</button>
+                <button class="btn-outline" onclick="hideAddCred()">Cancel</button>
+            </div>
+        </div>
+        <table id="cred-table">
+            <thead><tr><th>Name</th><th>Value</th><th></th></tr></thead>
+            <tbody id="cred-body"></tbody>
+        </table>
+        <div id="cred-empty" class="empty">No credentials stored</div>
+    </div>
+
+    <div style="margin-top:1rem">
+        <button class="btn-outline" onclick="lockVault()">Lock Vault</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function checkVault() {
+    const d = await apiCall('GET', '/api/vault/status')
+    document.getElementById('vault-setup').style.display = !d.initialized ? 'block' : 'none'
+    document.getElementById('vault-locked').style.display = d.initialized && !d.unlocked ? 'block' : 'none'
+    document.getElementById('vault-unlocked').style.display = d.unlocked ? 'block' : 'none'
+    if (d.unlocked) { loadCreds(); loadRoom() }
+}
+
+async function initVault() {
+    const pass = document.getElementById('init-pass').value
+    if (!pass) return
+    try {
+        await apiCall('POST', '/api/vault/initialize', { passphrase: pass })
+        await apiCall('POST', '/api/vault/unlock', { passphrase: pass })
+        toast('Vault initialized')
+        checkVault()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+async function unlockVault() {
+    const pass = document.getElementById('unlock-pass').value
+    if (!pass) return
+    try {
+        await apiCall('POST', '/api/vault/unlock', { passphrase: pass })
+        toast('Vault unlocked')
+        checkVault()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+async function lockVault() {
+    await apiCall('POST', '/api/vault/lock')
+    toast('Vault locked')
+    checkVault()
+}
+
+async function loadCreds() {
+    try {
+        const d = await apiCall('GET', '/api/vault/credentials')
+        const tbody = document.getElementById('cred-body')
+        const empty = document.getElementById('cred-empty')
+        if (d.credentials.length === 0) {
+            tbody.innerHTML = ''
+            empty.style.display = 'block'
+            return
+        }
+        empty.style.display = 'none'
+        tbody.innerHTML = d.credentials.map(c =>
+            '<tr><td>' + c.name + '</td>' +
+            '<td style="font-family:monospace;font-size:0.75rem">' + c.value.replace(/./g, '\u2022').slice(0,20) + '</td>' +
+            '<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteCred(\'' + c.name + '\')">Delete</button></td></tr>'
+        ).join('')
+    } catch(e) {}
+}
+
+async function loadRoom() {
+    try {
+        const d = await apiCall('GET', '/api/vault/room-number')
+        document.getElementById('current-room').textContent = d.room_number ? 'Current: Room ' + d.room_number : ''
+    } catch(e) {}
+}
+
+async function saveCred() {
+    const name = document.getElementById('cred-name').value
+    const value = document.getElementById('cred-value').value
+    if (!name || !value) return
+    try {
+        await apiCall('POST', '/api/vault/credentials', { name, value })
+        toast('Saved ' + name)
+        document.getElementById('cred-name').value = ''
+        document.getElementById('cred-value').value = ''
+        hideAddCred()
+        loadCreds()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+async function deleteCred(name) {
+    try {
+        await apiCall('DELETE', '/api/vault/credentials/' + name)
+        toast('Deleted ' + name)
+        loadCreds()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+async function saveRoom() {
+    const room = document.getElementById('room-number').value
+    const nights = parseInt(document.getElementById('room-nights').value) || 1
+    if (!room) return
+    try {
+        await apiCall('POST', '/api/vault/room-number', { room_number: room, nights })
+        toast('Room ' + room + ' saved')
+        loadRoom()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+function showAddCred() { document.getElementById('add-cred-form').style.display = 'block' }
+function hideAddCred() { document.getElementById('add-cred-form').style.display = 'none' }
+
+checkVault()
+</script>
+{% endblock %}

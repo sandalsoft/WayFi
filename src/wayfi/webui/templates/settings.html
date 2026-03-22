@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+
+<div id="settings-container"></div>
+
+<div class="form-actions">
+    <button onclick="saveSettings()">Save All</button>
+    <button class="btn-outline" onclick="loadSettings()">Reset</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentSettings = {}
+
+const sectionLabels = {
+    ap: 'Access Point',
+    upstream: 'Upstream WiFi',
+    network: 'Network',
+    portal: 'Portal Detection',
+    llm: 'Local LLM',
+    cloud: 'Cloud API',
+    twilio: 'SMS Notifications',
+    vpn: 'VPN',
+    calendar: 'Calendar',
+    speedtest: 'Speed Test',
+    webui: 'Web UI',
+    logging: 'Logging'
+}
+
+const sensitiveKeys = ['password', 'passphrase', 'token', 'secret', 'api_key']
+
+function renderSettings(settings) {
+    const container = document.getElementById('settings-container')
+    container.innerHTML = ''
+    currentSettings = settings
+
+    for (const [section, values] of Object.entries(settings)) {
+        if (typeof values !== 'object' || values === null) continue
+        const label = sectionLabels[section] || section
+        let html = '<div class="section"><h2>' + label + '</h2>'
+
+        for (const [key, val] of Object.entries(values)) {
+            if (typeof val === 'object' && val !== null) continue
+            const isSensitive = sensitiveKeys.some(s => key.toLowerCase().includes(s))
+            const inputType = isSensitive ? 'password' : typeof val === 'number' ? 'number' : 'text'
+            const id = 'setting-' + section + '-' + key
+            html += '<div class="form-group">'
+            html += '<label>' + key.replace(/_/g, ' ') + '</label>'
+            html += '<input type="' + inputType + '" id="' + id + '" value="' + (val ?? '') + '" data-section="' + section + '" data-key="' + key + '" data-type="' + typeof val + '">'
+            html += '</div>'
+        }
+        html += '</div>'
+        container.innerHTML += html
+    }
+}
+
+async function loadSettings() {
+    const d = await apiCall('GET', '/api/settings')
+    renderSettings(d.settings)
+}
+
+async function saveSettings() {
+    const inputs = document.querySelectorAll('[data-section]')
+    const changes = {}
+
+    inputs.forEach(input => {
+        const section = input.dataset.section
+        const key = input.dataset.key
+        let val = input.value
+        if (input.dataset.type === 'number') val = parseFloat(val)
+        if (input.dataset.type === 'boolean') val = val === 'true'
+
+        if (!changes[section]) changes[section] = {}
+        changes[section][key] = val
+    })
+
+    try {
+        for (const [section, values] of Object.entries(changes)) {
+            await apiCall('POST', '/api/settings', { section, values })
+        }
+        toast('Settings saved')
+    } catch(e) { toast(e.message, 'error') }
+}
+
+loadSettings()
+</script>
+{% endblock %}

@@ -149,6 +149,8 @@ class LLMSolver:
             "stream": False,
         }
         if self.use_grammar:
+            # Try json_schema for newer llama.cpp, fall back to grammar
+            body["response_format"] = {"type": "json_object"}
             body["grammar"] = PORTAL_JSON_GRAMMAR
 
         timeout = aiohttp.ClientTimeout(total=self.timeout)

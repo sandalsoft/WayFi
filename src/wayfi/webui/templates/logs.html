@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+<h1>Logs</h1>
+
+<div class="section">
+    <div class="section-header">
+        <h2>Live Stream</h2>
+        <div class="btn-group">
+            <button id="stream-btn" class="btn btn-sm" onclick="toggleStream()">Connect</button>
+            <button class="btn btn-sm btn-outline" onclick="clearLogs()">Clear</button>
+        </div>
+    </div>
+    <div id="log-viewer" class="log-container"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let eventSource = null
+let streaming = false
+
+async function loadLogs() {
+    const d = await apiCall('GET', '/api/logs?limit=200')
+    const viewer = document.getElementById('log-viewer')
+    viewer.innerHTML = d.logs.map(formatLog).join('')
+    viewer.scrollTop = viewer.scrollHeight
+}
+
+function formatLog(line) {
+    const level = line.includes('ERROR') ? 'ERROR' : line.includes('WARNING') ? 'WARNING' : 'INFO'
+    return '<div class="log-line ' + level + '">' + line.replace(/</g, '&lt;') + '</div>'
+}
+
+function toggleStream() {
+    if (streaming) {
+        stopStream()
+    } else {
+        startStream()
+    }
+}
+
+function startStream() {
+    eventSource = new EventSource('/api/logs/stream')
+    eventSource.onmessage = (e) => {
+        const viewer = document.getElementById('log-viewer')
+        viewer.innerHTML += formatLog(e.data)
+        if (viewer.children.length > 500) viewer.removeChild(viewer.firstChild)
+        viewer.scrollTop = viewer.scrollHeight
+    }
+    eventSource.onerror = () => { stopStream() }
+    streaming = true
+    document.getElementById('stream-btn').textContent = 'Disconnect'
+    document.getElementById('stream-btn').classList.add('btn-danger')
+}
+
+function stopStream() {
+    if (eventSource) { eventSource.close(); eventSource = null }
+    streaming = false
+    document.getElementById('stream-btn').textContent = 'Connect'
+    document.getElementById('stream-btn').classList.remove('btn-danger')
+}
+
+function clearLogs() {
+    document.getElementById('log-viewer').innerHTML = ''
+}
+
+loadLogs()
+</script>
+{% endblock %}

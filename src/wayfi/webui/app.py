@@ -57,4 +57,24 @@ def create_app(
     async def dashboard(request: Request):
         return templates.TemplateResponse("dashboard.html", {"request": request})
 
+    @app.get("/vault")
+    async def vault_page(request: Request):
+        return templates.TemplateResponse("vault.html", {"request": request})
+
+    @app.get("/networks")
+    async def networks_page(request: Request):
+        return templates.TemplateResponse("networks.html", {"request": request})
+
+    @app.get("/patterns")
+    async def patterns_page(request: Request):
+        return templates.TemplateResponse("patterns.html", {"request": request})
+
+    @app.get("/settings")
+    async def settings_page(request: Request):
+        return templates.TemplateResponse("settings.html", {"request": request})
+
+    @app.get("/logs")
+    async def logs_page(request: Request):
+        return templates.TemplateResponse("logs.html", {"request": request})
+
     return app

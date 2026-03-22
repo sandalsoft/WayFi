@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Patterns{% endblock %}
+{% block content %}
+<h1>Portal Patterns</h1>
+
+<div class="section">
+    <div class="section-header">
+        <h2>Installed Patterns</h2>
+        <span id="pattern-count" class="badge badge-accent">0</span>
+    </div>
+    <table>
+        <thead><tr><th>Name</th><th>Vendor</th><th>File</th><th></th></tr></thead>
+        <tbody id="pattern-body"></tbody>
+    </table>
+</div>
+
+<div id="pattern-editor" class="section" style="display:none">
+    <div class="section-header">
+        <h2 id="editor-title">Edit Pattern</h2>
+        <button class="btn btn-sm btn-outline" onclick="closeEditor()">Close</button>
+    </div>
+    <div class="form-group">
+        <label>YAML</label>
+        <textarea id="pattern-yaml" style="min-height:280px;font-family:monospace;font-size:0.75rem"></textarea>
+    </div>
+    <div class="btn-group">
+        <button onclick="savePattern()">Save</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editingFile = null
+
+async function loadPatterns() {
+    const d = await apiCall('GET', '/api/patterns')
+    document.getElementById('pattern-count').textContent = d.patterns.length
+    document.getElementById('pattern-body').innerHTML = d.patterns.map(p =>
+        '<tr><td><strong>' + p.name + '</strong></td>' +
+        '<td>' + p.vendor + '</td>' +
+        '<td style="font-family:monospace;font-size:0.75rem;color:var(--text-dim)">' + p.filename + '</td>' +
+        '<td style="text-align:right"><button class="btn btn-sm btn-outline" onclick="editPattern(\'' + p.filename + '\')">Edit</button></td></tr>'
+    ).join('')
+}
+
+async function editPattern(filename) {
+    const d = await apiCall('GET', '/api/patterns/' + filename)
+    editingFile = filename
+    document.getElementById('editor-title').textContent = 'Edit: ' + filename
+    document.getElementById('pattern-yaml').value = d.content
+    document.getElementById('pattern-editor').style.display = 'block'
+    document.getElementById('pattern-yaml').focus()
+}
+
+async function savePattern() {
+    if (!editingFile) return
+    const yaml = document.getElementById('pattern-yaml').value
+    try {
+        await apiCall('PUT', '/api/patterns/' + editingFile, {
+            name: editingFile.replace('.yaml', ''),
+            vendor: '',
+            yaml_content: yaml
+        })
+        toast('Pattern saved')
+        loadPatterns()
+    } catch(e) { toast(e.message, 'error') }
+}
+
+function closeEditor() {
+    document.getElementById('pattern-editor').style.display = 'none'
+    editingFile = null
+}
+
+loadPatterns()
+</script>
+{% endblock %}
