@@ -34,12 +34,12 @@ upstream:
   interface: "wlan0"
 
 llm:
-  endpoint: "http://localhost:8080"
-  model: "llama-3.1-8b"
+  endpoint: "http://localhost:8081"
+  model: "qwen2.5-3b-instruct"
   timeout: 30                # seconds
   context_window: 2048
   temperature: 0.1
-  grammar_constrained: true  # use GBNF grammar for JSON output
+  grammar_constrained: false # Qwen2.5 produces clean JSON natively
 
 cloud:
   provider: "claude"         # claude or openai
@@ -87,8 +87,8 @@ speedtest:
     dns: 0.1
 
 webui:
-  host: "192.168.8.1"
-  port: 80
+  host: "0.0.0.0"
+  port: 8080
 
 logging:
   level: "INFO"
