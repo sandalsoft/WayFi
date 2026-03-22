@@ -128,7 +128,13 @@ class Orchestrator:
             model=llm_cfg.get("model", "llama-3.1-8b"),
             timeout=llm_cfg.get("timeout", 30),
         )
-        self.cloud_solver = CloudSolver()
+        cloud_cfg = self.config.get("cloud", {})
+        self.cloud_solver = CloudSolver(config=CloudConfig(
+            provider=cloud_cfg.get("provider", "claude"),
+            claude_model=cloud_cfg.get("claude_model", "claude-sonnet-4-20250514"),
+            openai_model=cloud_cfg.get("openai_model", "gpt-4o-mini"),
+            timeout=cloud_cfg.get("timeout", 15),
+        ))
         self.submitter = PortalSubmitter()
 
         # Quality
@@ -283,6 +289,13 @@ class Orchestrator:
 
         # Get vault values for field interpolation
         vault_values = self._get_vault_values()
+
+        # Inject API keys from vault into cloud solver
+        if self.cloud_solver:
+            if vault_values.get("claude_api_key"):
+                self.cloud_solver.config.claude_api_key = vault_values["claude_api_key"]
+            if vault_values.get("openai_api_key"):
+                self.cloud_solver.config.openai_api_key = vault_values["openai_api_key"]
 
         # Run heuristic and LLM in parallel (first wins)
         heuristic_task = asyncio.create_task(
