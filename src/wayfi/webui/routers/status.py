@@ -72,16 +72,87 @@ async def _get_ap_clients(interface: str = "wlan1") -> list[dict]:
     return list(clients.values())
 
 
+async def _system_status() -> dict:
+    """Read network state directly from the system (no orchestrator)."""
+    ssid = ""
+    ip_address = ""
+    ap_active = False
+
+    # Check upstream WiFi (wlan0)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "iw", "dev", "wlan0", "link",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await proc.communicate()
+        output = stdout.decode("utf-8", errors="replace")
+        for line in output.splitlines():
+            line = line.strip()
+            if line.startswith("SSID:"):
+                ssid = line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+
+    # Get IP
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "ip", "-4", "-br", "addr", "show", "wlan0",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await proc.communicate()
+        parts = stdout.decode().split()
+        for p in parts:
+            if "/" in p and p[0].isdigit():
+                ip_address = p.split("/")[0]
+                break
+    except Exception:
+        pass
+
+    # Check AP
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "systemctl", "is-active", "wayfi-hostapd",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await proc.communicate()
+        ap_active = stdout.decode().strip() == "active"
+    except Exception:
+        pass
+
+    clients = await _get_ap_clients()
+
+    if ssid:
+        state = "MONITOR"
+    elif ip_address:
+        state = "CONNECT"
+    else:
+        state = "SCAN"
+
+    return {
+        "state": state,
+        "ssid": ssid,
+        "ip_address": ip_address,
+        "ap_active": ap_active,
+        "ap_clients": len(clients),
+        "quality_score": 0,
+        "vpn_active": False,
+        "portal_solved": bool(ssid),
+        "uptime_seconds": 0,
+        "connected_at": 0,
+    }
+
+
 @router.get("/status")
 async def get_status(request: Request) -> dict:
     """Get current WayFi connection status."""
     orch = request.app.state.orchestrator
 
     if not orch:
-        return {
-            "state": "unknown",
-            "message": "Orchestrator not initialized",
-        }
+        # No orchestrator — read system state directly
+        return await _system_status()
 
     os = orch.os
     uptime = time.time() - os.boot_time if os.boot_time else 0
