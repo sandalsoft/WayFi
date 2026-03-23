@@ -103,9 +103,42 @@ async function refreshLogs() {
     } catch(e) {}
 }
 
+function formatBytes(bytes) {
+    if (!bytes) return '0 B'
+    const units = ['B', 'KB', 'MB', 'GB']
+    let i = 0
+    while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++ }
+    return bytes.toFixed(i ? 1 : 0) + ' ' + units[i]
+}
+
+async function refreshClients() {
+    try {
+        const resp = await fetch('/api/clients')
+        const d = await resp.json()
+        document.getElementById('client-count').textContent = d.count
+        const container = document.getElementById('clients')
+        if (d.count === 0) {
+            container.className = 'empty'
+            container.innerHTML = 'No clients connected'
+            return
+        }
+        container.className = ''
+        container.innerHTML = '<table><thead><tr><th>Device</th><th>IP</th><th>Signal</th><th>Traffic</th><th>Connected</th></tr></thead><tbody>' +
+            d.clients.map(c => {
+                const name = c.hostname || c.mac
+                const signal = c.signal_dbm ? c.signal_dbm + ' dBm' : '--'
+                const traffic = formatBytes((c.rx_bytes || 0) + (c.tx_bytes || 0))
+                const time = c.connected_secs ? formatTime(c.connected_secs) : '--'
+                return '<tr><td><strong>' + name + '</strong></td><td style="font-family:monospace;font-size:0.8rem">' + (c.ip || '--') + '</td><td>' + signal + '</td><td>' + traffic + '</td><td>' + time + '</td></tr>'
+            }).join('') + '</tbody></table>'
+    } catch(e) {}
+}
+
 refreshStatus()
+refreshClients()
 refreshLogs()
 setInterval(refreshStatus, 5000)
+setInterval(refreshClients, 5000)
 setInterval(refreshLogs, 5000)
 </script>
 {% endblock %}
